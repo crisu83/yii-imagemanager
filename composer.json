@@ -1,15 +1,16 @@
 {
     "name": "crisu83/yii-imagemanager",
     "description": "Image manager for the Yii PHP framework.",
-    "require": {
-        "imagine/imagine": "dev-develop"
-    },
     "license": "BSD-3-Clause",
-    "authors": [
+	"authors": [
         {
             "name": "Christoffer Niska",
             "email": "ChristofferNiska@gmail.com"
         }
     ],
-    "minimum-stability": "dev"
+	"minimum-stability": "dev",
+	"require": {
+		"crisu83/yii-extension": "@no-namespaces",
+		"imagine/imagine": "dev-develop"
+	}
 }

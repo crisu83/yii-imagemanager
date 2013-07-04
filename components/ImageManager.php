@@ -11,9 +11,7 @@
 Yii::setPathOfAlias('Imagine', Yii::getPathOfAlias('vendor.imagine.imagine.lib.Imagine'));
 
 // Import the extension component behavior.
-Yii::import('vendor.crisu83.yii-extension.behaviors.ComponentBehavior', true/* force include */);
-
-use crisu83\yii_extension\behaviors\ComponentBehavior;
+Yii::import('vendor.crisu83.yii-extension.behaviors.ComponentBehavior');
 
 /**
  * Application component for managing images.

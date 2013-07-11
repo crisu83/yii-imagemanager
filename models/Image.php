@@ -64,13 +64,22 @@ class Image extends CActiveRecord
     }
 
     /**
+     * Returns the full filename for this file.
+     * @return string the filename.
+     */
+    public function resolveFilename()
+    {
+        return $this->name . '-' . $this->id . '.' . $this->extension;
+    }
+
+    /**
      * Returns the image file path.
      * @return string the path.
      */
     public function resolveFilePath()
     {
         $file = $this->getFile();
-        $path = $file->getPath() . $file->resolveFilename();
+        $path = $file->getPath() . $this->resolveFilename();
         return $this->_manager->normalizePath($path);
     }
 

@@ -40,7 +40,7 @@ class ImageBehavior extends CActiveRecordBehavior
      * @param string $placeholder the placeholder image.
      * @return string the rendered image.
      */
-    public function renderImagePreset($name, $alt = '', $htmlOptions = array(), $placeholder = '')
+    public function renderImagePreset($name, $alt = '', $htmlOptions = array(), $placeholder = '´&nbsp;')
     {
         return !empty($this->owner->{$this->idAttribute})
             ? CHtml::image($this->createImagePresetUrl($name), $alt, $htmlOptions)

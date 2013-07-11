@@ -8,17 +8,20 @@
  */
 
 use Imagine\Image\ImageInterface;
+use Imagine\Image\ImagineInterface;
 
 // Let Yii's autoloader know where to find the Imagine classes.
 Yii::setPathOfAlias('Imagine', Yii::getPathOfAlias('vendor.imagine.imagine.lib.Imagine'));
 
-// Import the extension component behavior.
+// Import some dependencies.
 Yii::import('vendor.crisu83.yii-extension.behaviors.ComponentBehavior');
-
 Yii::import('vendor.crisu83.yii-filemanager.models.File');
 
 /**
  * Application component for managing images.
+ *
+ * @method createPathAlias($alias, $path) via ComponentBehavior
+ * @method import($alias) via ComponentBehavior
  */
 class ImageManager extends CApplicationComponent
 {
@@ -44,29 +47,31 @@ class ImageManager extends CApplicationComponent
      */
     public $presets = array();
     /**
-     * @var string
+     * @var string the name of the images directory.
      */
     public $imageDir = 'images';
     /**
-     * @var string
+     * @var string the name of the directory with the unmodified images.
      */
     public $rawDir = 'raw';
     /**
-     * @var string
+     * @var string the name of the directory with the modified or cached images.
      */
     public $cacheDir = 'cache';
     /**
-     * @var string
+     * @var string the name of the image model class.
      */
     public $modelClass = 'Image';
     /**
-     * @var string
+     * @var string the component id for the file manager.
      */
     public $fileManagerID = 'fileManager';
 
-    private $_basePath;
+    /** @var FileManager */
     private $_fileManager;
+    /** @var ImagineFilterChain[] */
     private $_filterChains;
+    /** @var ImagineInterface */
     private $_factory;
 
     /**
@@ -83,7 +88,7 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
-     * Creates filters from the presets.
+     * Creates filter chains from the presets.
      */
     protected function initFilterChains()
     {
@@ -254,8 +259,9 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
-     * @param boolean $absolute
-     * @return string
+     * Returns the path to the raw images.
+     * @param boolean $absolute whether the path should be absolute.
+     * @return string the path.
      */
     public function resolveRawPath($absolute = false)
     {
@@ -264,8 +270,9 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
-     * @param boolean $absolute
-     * @return string
+     * Returns the path to the cached images.
+     * @param boolean $absolute whether the path should be absolute.
+     * @return string the path.
      */
     public function resolveCachePath($absolute = false)
     {
@@ -274,8 +281,9 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
-     * @param bool $absolute
-     * @return string
+     * Returns the url to the cached images.
+     * @param boolean $absolute whether the url should be absolute.
+     * @return string the url.
      */
     public function resolveCacheUrl($absolute = false)
     {
@@ -284,7 +292,8 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
-     * @return Imagine\Image\ImagineInterface
+     * Returns the Imagine factory.
+     * @return ImagineInterface the factory.
      */
     public function getFactory()
     {
@@ -296,9 +305,10 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
-     * @param $driver
-     * @return Imagine\Image\ImagineInterface
-     * @throws CException
+     * Creates the Imagine factory for the given image driver.
+     * @param string $driver the image driver.
+     * @return ImagineInterface the factory.
+     * @throws CException if the driver is invalid
      */
     protected function createFactory($driver)
     {
@@ -315,8 +325,9 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
-     * @return FileManager
-     * @throws CException
+     * Returns the file manager component.
+     * @return FileManager the component.
+     * @throws CException if the component is not found.
      */
     public function getFileManager()
     {

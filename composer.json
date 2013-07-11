@@ -11,6 +11,6 @@
 	"minimum-stability": "dev",
 	"require": {
 		"crisu83/yii-extension": "dev-no-namespaces",
-		"imagine/imagine": "dev-develop"
+		"imagine/imagine": "0.6.*@dev"
 	}
 }

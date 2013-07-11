@@ -1,4 +1,11 @@
 <?php
+/**
+ * Image class file.
+ * @author Christoffer Niska <christoffer.niska@gmail.com>
+ * @copyright Copyright &copy; Christoffer Niska 2013-
+ * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
+ * @package crisu83.yii-imagemanager.models
+ */
 
 /**
  * This is the model class for table "image".
@@ -8,12 +15,12 @@
  * @property integer $fileId
  * @property integer $width
  * @property integer $height
- *
- * The followings are the available relations for table 'image':
- * @property File $file
  */
 class Image extends CActiveRecord
 {
+    /** @var ImageManager */
+    private $_manager;
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
@@ -40,18 +47,6 @@ class Image extends CActiveRecord
 		return array(
 			array('fileId, width, height', 'required'),
 			array('fileId, width, height', 'numerical', 'integerOnly' => true),
-			// The following rule is used by search().
-			array('id, fileId, width, height', 'safe', 'on' => 'search'),
-		);
-	}
-
-	/**
-	 * @return array relational rules.
-	 */
-	public function relations()
-	{
-		return array(
-			'file' => array(self::BELONGS_TO, 'File', 'fileId'),
 		);
 	}
 
@@ -68,21 +63,32 @@ class Image extends CActiveRecord
 		);
 	}
 
-	/**
-	 * Retrieves a list of models based on the current search/filter conditions.
-	 * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
-	 */
-	public function search()
-	{
-		$criteria = new CDbCriteria;
+    /**
+     * Returns the image file path.
+     * @return string the path.
+     */
+    public function resolveFilePath()
+    {
+        $file = $this->getFile();
+        $path = $file->getPath() . $file->resolveFilename();
+        return $this->_manager->normalizePath($path);
+    }
 
-		$criteria->compare('id', $this->id, true);
-		$criteria->compare('fileId', $this->fileId);
-		$criteria->compare('width', $this->width);
-		$criteria->compare('height', $this->height);
+    /**
+     * Returns the associated file model.
+     * @return File the model.
+     */
+    public function getFile()
+    {
+        return $this->_manager->getFileManager()->loadModel($this->fileId);
+    }
 
-		return new CActiveDataProvider($this, array(
-			'criteria' => $criteria,
-		));
-	}
+    /**
+     * Sets the image manager.
+     * @param ImageManager $manager the component.
+     */
+    public function setManager($manager)
+    {
+        $this->_manager = $manager;
+    }
 }

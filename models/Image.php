@@ -69,7 +69,8 @@ class Image extends CActiveRecord
      */
     public function resolveFilename()
     {
-        return $this->name . '-' . $this->id . '.' . $this->extension;
+        $file = $this->getFile();
+        return $file->name . '-' . $this->id . '.' . $file->extension;
     }
 
     /**

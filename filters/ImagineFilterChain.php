@@ -22,13 +22,14 @@ class ImagineFilterChain extends CList
     public static function create($filters)
     {
         $chain = new ImagineFilterChain();
-        foreach ($filters as $filter)
-        {
+        foreach ($filters as $filter) {
             // todo: add some error handling.
-            if (is_array($filter))
+            if (is_array($filter)) {
                 $filter = ImagineFilter::createFilter($filter[0], array_slice($filter, 1));
-            if (is_object($filter))
+            }
+            if (is_object($filter)) {
                 $chain->add($filter);
+            }
         }
         return $chain;
     }
@@ -41,8 +42,9 @@ class ImagineFilterChain extends CList
     public function apply(ImageInterface $image)
     {
         /** @var ImagineFilter $filter */
-        foreach ($this as $filter)
+        foreach ($this as $filter) {
             $image = $filter->apply($image);
+        }
         return $image;
     }
 }

@@ -41,12 +41,12 @@ class ImageController extends CController
      */
     protected function getImageManager()
     {
-        if ($this->_imageManager !== null)
+        if ($this->_imageManager !== null) {
             return $this->_imageManager;
-        else
-        {
-            if (($imageManager = Yii::app()->getComponent($this->componentID)) == null)
+        } else {
+            if (($imageManager = Yii::app()->getComponent($this->componentID)) == null) {
                 throw new CException('Failed to get image manager. Component not found.');
+            }
             return $this->_imageManager = $imageManager;
         }
     }

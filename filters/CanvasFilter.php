@@ -47,8 +47,8 @@ class CanvasFilter extends ImagineFilter
      */
     public function load()
     {
-        $placement = $this->createPoint($this->x, $this->y);
-        $size = $this->createBox($this->width, $this->height);
+        $placement  = $this->createPoint($this->x, $this->y);
+        $size       = $this->createBox($this->width, $this->height);
         $background = $this->createColor($this->background);
         return new Canvas($this->factory, $size, $placement, $background);
     }

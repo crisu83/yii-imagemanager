@@ -18,8 +18,8 @@ class RelativeResizeFilter extends ImagineFilter
     // List of supported resize methods.
     const METHOD_HEIGHTEN = 'heighten';
     const METHOD_INCREASE = 'increase';
-    const METHOD_SCALE = 'scale';
-    const METHOD_WIDEN = 'widen';
+    const METHOD_SCALE    = 'scale';
+    const METHOD_WIDEN    = 'widen';
 
     /**
      * @var string the resize method.

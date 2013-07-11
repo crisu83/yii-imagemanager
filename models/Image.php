@@ -21,47 +21,47 @@ class Image extends CActiveRecord
     /** @var ImageManager */
     private $_manager;
 
-	/**
-	 * Returns the static model of the specified AR class.
-	 * @param string $className active record class name.
-	 * @return Image the static model class
-	 */
-	public static function model($className = __CLASS__)
-	{
-		return parent::model($className);
-	}
+    /**
+     * Returns the static model of the specified AR class.
+     * @param string $className active record class name.
+     * @return Image the static model class
+     */
+    public static function model($className = __CLASS__)
+    {
+        return parent::model($className);
+    }
 
-	/**
-	 * @return string the associated database table name
-	 */
-	public function tableName()
-	{
-		return 'image';
-	}
+    /**
+     * @return string the associated database table name
+     */
+    public function tableName()
+    {
+        return 'image';
+    }
 
-	/**
-	 * @return array validation rules for model attributes.
-	 */
-	public function rules()
-	{
-		return array(
-			array('fileId, width, height', 'required'),
-			array('fileId, width, height', 'numerical', 'integerOnly' => true),
-		);
-	}
+    /**
+     * @return array validation rules for model attributes.
+     */
+    public function rules()
+    {
+        return array(
+            array('fileId, width, height', 'required'),
+            array('fileId, width, height', 'numerical', 'integerOnly' => true),
+        );
+    }
 
-	/**
-	 * @return array customized attribute labels (name=>label)
-	 */
-	public function attributeLabels()
-	{
-		return array(
-			'id' => Yii::t('label', 'ID'),
-			'fileId' => Yii::t('label', 'File'),
-			'width' => Yii::t('label', 'Width'),
-			'height' => Yii::t('label', 'Height'),
-		);
-	}
+    /**
+     * @return array customized attribute labels (name=>label)
+     */
+    public function attributeLabels()
+    {
+        return array(
+            'id'     => Yii::t('label', 'ID'),
+            'fileId' => Yii::t('label', 'File'),
+            'width'  => Yii::t('label', 'Width'),
+            'height' => Yii::t('label', 'Height'),
+        );
+    }
 
     /**
      * Returns the image file path.

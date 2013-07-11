@@ -22,41 +22,41 @@ abstract class ImagineFilter extends CComponent
 {
     // List of supported filters.
     const FILTER_UNDEFINED = 'undefined';
-    const FILTER_POINT = 'point';
-    const FILTER_BOX = 'box';
-    const FILTER_TRIANGLE = 'triangle';
-    const FILTER_HERMITE = 'hermite';
-    const FILTER_HANNING = 'hanning';
-    const FILTER_HAMMING = 'hamming';
-    const FILTER_BLACKMAN = 'blackman';
-    const FILTER_GAUSSIAN = 'gaussian';
+    const FILTER_POINT     = 'point';
+    const FILTER_BOX       = 'box';
+    const FILTER_TRIANGLE  = 'triangle';
+    const FILTER_HERMITE   = 'hermite';
+    const FILTER_HANNING   = 'hanning';
+    const FILTER_HAMMING   = 'hamming';
+    const FILTER_BLACKMAN  = 'blackman';
+    const FILTER_GAUSSIAN  = 'gaussian';
     const FILTER_QUADRATIC = 'quadratic';
-    const FILTER_CUBIC = 'cubic';
-    const FILTER_CATROM = 'catrom';
-    const FILTER_MITCHELL = 'mitchell';
-    const FILTER_LANCZOS = 'lanczos';
-    const FILTER_BESSEL = 'bessel';
-    const FILTER_SINC = 'sinc';
+    const FILTER_CUBIC     = 'cubic';
+    const FILTER_CATROM    = 'catrom';
+    const FILTER_MITCHELL  = 'mitchell';
+    const FILTER_LANCZOS   = 'lanczos';
+    const FILTER_BESSEL    = 'bessel';
+    const FILTER_SINC      = 'sinc';
 
     // Map of the supported imagine filters.
     public static $builtInFilters = array(
-        'applyMask' => 'ApplyMaskFilter',
-        'border' => 'BorderFilter',
-        'canvas' => 'CanvasFilter',
-        'copy' => 'CopyFilter',
-        'crop' => 'CropFilter',
-        'fill' => 'FillFilter',
+        'applyMask'        => 'ApplyMaskFilter',
+        'border'           => 'BorderFilter',
+        'canvas'           => 'CanvasFilter',
+        'copy'             => 'CopyFilter',
+        'crop'             => 'CropFilter',
+        'fill'             => 'FillFilter',
         'flipHorizontally' => 'FlipHorizontallyFilter',
-        'flipVertically' => 'FlipVerticallyFilter',
-        'grayscale' => 'GrayscaleFilter',
-        'paste' => 'PasteFilter',
-        'relativeResize' => 'RelativeResizeFilter',
-        'resize' => 'ResizeFilter',
-        'rotate' => 'RotateFilter',
-        'save' => 'SaveFilter',
-        'show' => 'ShowFilter',
-        'strip' => 'StripFilter',
-        'thumbnail' => 'ThumbnailFilter',
+        'flipVertically'   => 'FlipVerticallyFilter',
+        'grayscale'        => 'GrayscaleFilter',
+        'paste'            => 'PasteFilter',
+        'relativeResize'   => 'RelativeResizeFilter',
+        'resize'           => 'ResizeFilter',
+        'rotate'           => 'RotateFilter',
+        'save'             => 'SaveFilter',
+        'show'             => 'ShowFilter',
+        'strip'            => 'StripFilter',
+        'thumbnail'        => 'ThumbnailFilter',
     );
 
     /**
@@ -88,14 +88,16 @@ abstract class ImagineFilter extends CComponent
      */
     public static function createFilter($name, $params = array())
     {
-        if (isset(self::$builtInFilters[$name]))
+        if (isset(self::$builtInFilters[$name])) {
             $className = Yii::import(self::$builtInFilters[$name], true);
-        else
+        } else {
             $className = Yii::import($name, true);
+        }
         /* @var ImagineFilter $filter */
         $filter = new $className;
-        foreach ($params as $key => $value)
+        foreach ($params as $key => $value) {
             $filter->$key = $value;
+        }
         return $filter;
     }
 
@@ -117,10 +119,11 @@ abstract class ImagineFilter extends CComponent
      */
     protected function createColor($color)
     {
-        if (is_array($color) && isset($color[0], $color[1]))
+        if (is_array($color) && isset($color[0], $color[1])) {
             list($color, $alpha) = $color;
-        else
+        } else {
             $alpha = 0;
+        }
         return new Color($color, $alpha);
     }
 
@@ -141,9 +144,10 @@ abstract class ImagineFilter extends CComponent
      */
     protected function getFilter()
     {
-        if (isset($this->_filter))
+        if (isset($this->_filter)) {
             return $this->_filter;
-        else
+        } else {
             return $this->_filter = $this->load();
+        }
     }
 }

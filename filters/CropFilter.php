@@ -9,7 +9,6 @@
 
 use Imagine\Filter\Basic\Crop;
 use Imagine\Filter\FilterInterface;
-use Imagine\Image\ImageInterface;
 
 /**
  * Loader for the Imagine crop filter.
@@ -40,22 +39,7 @@ class CropFilter extends ImagineFilter
     public function load()
     {
         $start = $this->createPoint($this->x, $this->y);
-        $size = $this->createBox($this->width, $this->height);
+        $size  = $this->createBox($this->width, $this->height);
         return new Crop($start, $size);
     }
-
-    public function apply(ImageInterface $image)
-    {
-        if ($this->width === 0 || $this->height === 0)
-        {
-            $size = $image->getSize();
-            if ($this->width === 0)
-                $this->width = $size->getHeight();
-            if ($this->height === 0)
-                $this->height = $size->getWidth();
-        }
-        return parent::apply($image);
-    }
-
-
 }

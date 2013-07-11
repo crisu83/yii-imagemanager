@@ -23,16 +23,16 @@ Yii::import('vendor.crisu83.yii-filemanager.models.File');
 class ImageManager extends CApplicationComponent
 {
     // Supported image drivers.
-	const DRIVER_GD = 'gd';
-	const DRIVER_IMAGICK = 'imagick';
+    const DRIVER_GD      = 'gd';
+    const DRIVER_IMAGICK = 'imagick';
     const DRIVER_GMAGICK = 'gmagick';
 
-	/**
-	 * @var string the image driver to use.
-	 */
-	public $driver = self::DRIVER_GD;
-	/**
-	 * @var array the preset filter configurations.
+    /**
+     * @var string the image driver to use.
+     */
+    public $driver = self::DRIVER_GD;
+    /**
+     * @var array the preset filter configurations.
      *
      * Example usage:
      *
@@ -41,46 +41,46 @@ class ImageManager extends CApplicationComponent
      *     array('thumbnail', 'width' => 160, 'height' => 90),
      *   ),
      * ),
-	 */
-	public $presets = array();
-	/**
-	 * @var string
-	 */
-	public $imageDir = 'images';
-	/**
-	 * @var string
-	 */
-	public $rawDir = 'raw';
-	/**
-	 * @var string
-	 */
-	public $cacheDir = 'cache';
+     */
+    public $presets = array();
+    /**
+     * @var string
+     */
+    public $imageDir = 'images';
+    /**
+     * @var string
+     */
+    public $rawDir = 'raw';
+    /**
+     * @var string
+     */
+    public $cacheDir = 'cache';
     /**
      * @var string
      */
     public $modelClass = 'Image';
-	/**
-	 * @var string
-	 */
-	public $fileManagerID = 'fileManager';
+    /**
+     * @var string
+     */
+    public $fileManagerID = 'fileManager';
 
-	private $_basePath;
-	private $_fileManager;
+    private $_basePath;
+    private $_fileManager;
     private $_filterChains;
     private $_factory;
 
     /**
-	 * Initializes the component.
-	 */
-	public function init()
-	{
-		parent::init();
-		$this->attachBehavior('ext', new ComponentBehavior);
-		$this->createPathAlias('imageManager', __DIR__ . '/..');
-		$this->import('filters.*');
-		$this->import('models.*');
+     * Initializes the component.
+     */
+    public function init()
+    {
+        parent::init();
+        $this->attachBehavior('ext', new ComponentBehavior);
+        $this->createPathAlias('imageManager', __DIR__ . '/..');
+        $this->import('filters.*');
+        $this->import('models.*');
         $this->initFilterChains();
-	}
+    }
 
     /**
      * Creates filters from the presets.
@@ -88,8 +88,9 @@ class ImageManager extends CApplicationComponent
     protected function initFilterChains()
     {
         $this->_filterChains = array();
-        foreach ($this->presets as $name => $filters)
+        foreach ($this->presets as $name => $filters) {
             $this->_filterChains[$name] = ImagineFilterChain::create($filters);
+        }
     }
 
     /**
@@ -100,8 +101,8 @@ class ImageManager extends CApplicationComponent
      */
     public function createPresetUrl($id, $name)
     {
-        $model = $this->loadModel($id);
-        $cacheUrl = $this->resolvePresetCacheUrl($name);
+        $model     = $this->loadModel($id);
+        $cacheUrl  = $this->resolvePresetCacheUrl($name);
         $imagePath = $model->resolveFilePath();
         return $cacheUrl . $imagePath;
     }
@@ -115,16 +116,17 @@ class ImageManager extends CApplicationComponent
      */
     public function createPreset($id, $name)
     {
-        if (!isset($this->presets[$name]))
+        if (!isset($this->presets[$name])) {
             throw new CException('Failed to create preset.');
-        $filter = $this->getPresetFilterChain($name);
-        $model = $this->loadModel($id);
-        $file = $model->getFile();
-        $rawPath = $file->resolvePath();
-        $image = $this->openImage($rawPath);
-        $image = $filter->apply($image);
-        $path = $file->getPath();
-        $path = $this->normalizePath($path);
+        }
+        $filter    = $this->getPresetFilterChain($name);
+        $model     = $this->loadModel($id);
+        $file      = $model->getFile();
+        $rawPath   = $file->resolvePath();
+        $image     = $this->openImage($rawPath);
+        $image     = $filter->apply($image);
+        $path      = $file->getPath();
+        $path      = $this->normalizePath($path);
         $cachePath = $this->resolvePresetCachePath($name) . $path;
         $this->getFileManager()->createDirectory($cachePath);
         $cached = $cachePath . $file->resolveFilename();
@@ -195,23 +197,24 @@ class ImageManager extends CApplicationComponent
      * @throws CException
      */
     public function saveModel($file, $name = null, $path = null)
-	{
-		$fileManager = $this->getFileManager();
-		$path = $this->resolveRawPath() . $path;
-		$file = $fileManager->saveModel($file, $name, $path);
+    {
+        $fileManager = $this->getFileManager();
+        $path        = $this->resolveRawPath() . $path;
+        $file        = $fileManager->saveModel($file, $name, $path);
         /* @var Image $model */
-		$model = new $this->modelClass();
+        $model = new $this->modelClass();
         $model->setManager($this);
-        $savePath = $file->resolvePath();
-        $image = $this->openImage($savePath);
-		$model->fileId = $file->id;
-		$size = $image->getSize();
-		$model->width = $size->getWidth();
-		$model->height = $size->getHeight();
-		if (!$model->save())
-			throw new CException('Failed to save image. Database record could not be saved.');
-		return $model;
-	}
+        $savePath      = $file->resolvePath();
+        $image         = $this->openImage($savePath);
+        $model->fileId = $file->id;
+        $size          = $image->getSize();
+        $model->width  = $size->getWidth();
+        $model->height = $size->getHeight();
+        if (!$model->save()) {
+            throw new CException('Failed to save image. Database record could not be saved.');
+        }
+        return $model;
+    }
 
     /**
      * Loads an image model.
@@ -222,8 +225,9 @@ class ImageManager extends CApplicationComponent
     {
         /* @var Image $model */
         $model = CActiveRecord::model($this->modelClass)->findByPk($id);
-        if ($model === null)
+        if ($model === null) {
             throw new CException('Failed to load image model.');
+        }
         $model->setManager($this);
         return $model;
     }
@@ -245,29 +249,29 @@ class ImageManager extends CApplicationComponent
      * @return \Imagine\Image\ImageInterface
      */
     public function openImage($path)
-	{
-		return $this->getFactory()->open($path);
-	}
+    {
+        return $this->getFactory()->open($path);
+    }
 
-	/**
-	 * @param boolean $absolute
-	 * @return string
-	 */
-	public function resolveRawPath($absolute = false)
-	{
+    /**
+     * @param boolean $absolute
+     * @return string
+     */
+    public function resolveRawPath($absolute = false)
+    {
         $path = $absolute ? $this->getFileManager()->getBasePath() : '';
         return $path . $this->imageDir . '/' . $this->rawDir . '/';
-	}
+    }
 
-	/**
-	 * @param boolean $absolute
-	 * @return string
-	 */
-	public function resolveCachePath($absolute = false)
-	{
+    /**
+     * @param boolean $absolute
+     * @return string
+     */
+    public function resolveCachePath($absolute = false)
+    {
         $path = $absolute ? $this->getFileManager()->getBasePath(true) : '';
-		return $path . $this->imageDir . '/' . $this->cacheDir . '/';
-	}
+        return $path . $this->imageDir . '/' . $this->cacheDir . '/';
+    }
 
     /**
      * @param bool $absolute
@@ -279,50 +283,50 @@ class ImageManager extends CApplicationComponent
         return $url . $this->imageDir . '/' . $this->cacheDir . '/';
     }
 
-	/**
-	 * @return Imagine\Image\ImagineInterface
-	 */
-	public function getFactory()
-	{
-		if (isset($this->_factory))
-			return $this->_factory;
-		else
-			return $this->_factory = $this->createFactory($this->driver);
-	}
+    /**
+     * @return Imagine\Image\ImagineInterface
+     */
+    public function getFactory()
+    {
+        if (isset($this->_factory)) {
+            return $this->_factory;
+        } else {
+            return $this->_factory = $this->createFactory($this->driver);
+        }
+    }
 
-	/**
-	 * @param $driver
-	 * @return Imagine\Image\ImagineInterface
-	 * @throws CException
-	 */
-	protected function createFactory($driver)
-	{
-		switch ($driver)
-		{
-			case self::DRIVER_GD:
-				return new Imagine\Gd\Imagine();
-			case self::DRIVER_IMAGICK:
-				return new Imagine\Imagick\Imagine();
+    /**
+     * @param $driver
+     * @return Imagine\Image\ImagineInterface
+     * @throws CException
+     */
+    protected function createFactory($driver)
+    {
+        switch ($driver) {
+            case self::DRIVER_GD:
+                return new Imagine\Gd\Imagine();
+            case self::DRIVER_IMAGICK:
+                return new Imagine\Imagick\Imagine();
             case self::DRIVER_GMAGICK:
                 return new Imagine\Gmagick\Imagine();
-			default:
-				throw new CException('Failed to create factory. Driver not found.');
-		}
-	}
+            default:
+                throw new CException('Failed to create factory. Driver not found.');
+        }
+    }
 
-	/**
-	 * @return FileManager
-	 * @throws CException
-	 */
-	public function getFileManager()
-	{
-		if (isset($this->_fileManager))
-			return $this->_fileManager;
-		else
-		{
-			if (!Yii::app()->hasComponent($this->fileManagerID))
-				throw new CException('Failed to get file manager. Application component could not be found.');
-			return $this->_fileManager = Yii::app()->getComponent($this->fileManagerID);
-		}
-	}
+    /**
+     * @return FileManager
+     * @throws CException
+     */
+    public function getFileManager()
+    {
+        if (isset($this->_fileManager)) {
+            return $this->_fileManager;
+        } else {
+            if (!Yii::app()->hasComponent($this->fileManagerID)) {
+                throw new CException('Failed to get file manager. Application component could not be found.');
+            }
+            return $this->_fileManager = Yii::app()->getComponent($this->fileManagerID);
+        }
+    }
 }

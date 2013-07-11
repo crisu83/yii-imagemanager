@@ -24,8 +24,9 @@ class ImageBehavior extends CActiveRecordBehavior
     public function saveImage($file, $name = null, $path = null)
     {
         $model = $this->getImageManager()->saveModel($file, $name, $path);
-        if ($model === null)
+        if ($model === null) {
             return null;
+        }
         $this->owner->{$this->idAttribute} = $model->id;
         $this->owner->save(true, array($this->idAttribute));
         return $model;
@@ -62,8 +63,7 @@ class ImageBehavior extends CActiveRecordBehavior
      */
     public function deleteImage()
     {
-        if ($this->getImageManager()->deleteModel($this->owner{$this->idAttribute}))
-        {
+        if ($this->getImageManager()->deleteModel($this->owner{$this->idAttribute})) {
             $this->owner->{$this->idAttribute} = null;
             return $this->owner->save(true, array($this->idAttribute));
         }
@@ -76,9 +76,10 @@ class ImageBehavior extends CActiveRecordBehavior
      */
     protected function getImageManager()
     {
-        if (isset($this->_imageManager))
+        if (isset($this->_imageManager)) {
             return $this->_imageManager;
-        else
+        } else {
             return $this->_imageManager = Yii::app()->getComponent($this->componentID);
+        }
     }
 }

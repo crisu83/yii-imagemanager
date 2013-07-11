@@ -15,7 +15,7 @@ use Imagine\Filter\FilterInterface;
  */
 class ThumbnailFilter extends ImagineFilter
 {
-    const MODE_INSET = 'inset';
+    const MODE_INSET    = 'inset';
     const MODE_OUTBOUND = 'outbound';
 
     /**

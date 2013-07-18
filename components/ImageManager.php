@@ -158,7 +158,7 @@ class ImageManager extends CApplicationComponent
     protected function resolvePresetCachePath($name, $absolute = true)
     {
         $checksum = $this->calculateCacheChecksum($this->presets[$name]);
-        return $this->resolveCachePath($absolute) . $name . '-' . $checksum . '/';
+        return $this->resolveCachePath($absolute) . $name . '/' . $checksum . '/';
     }
 
     /**
@@ -170,17 +170,18 @@ class ImageManager extends CApplicationComponent
     protected function resolvePresetCacheUrl($name, $absolute = true)
     {
         $checksum = $this->calculateCacheChecksum($this->presets[$name]);
-        return $this->resolveCacheUrl($absolute) . $name . '-' . $checksum . '/';
+        return $this->resolveCacheUrl($absolute) . $name . '/' . $checksum . '/';
     }
 
     /**
      * Calculates the checksum from the given preset configuration.
+     * Override this method to change how to checksum is calculated.
      * @param array $config the preset configuration.
      * @return string the checksum.
      */
     protected function calculateCacheChecksum($config)
     {
-        return md5(CJSON::encode($config));
+        return sprintf('%x', crc32(CJSON::encode($config)));
     }
 
     /**

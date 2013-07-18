@@ -75,7 +75,9 @@ The following configuration parameters are available for the image manager:
 * **ImagineFilterChain** list class that allows you to chain image filters
 * **Image** model class for the image table
 
-## Setting up automatic generation of missing images
+## Advanced used
+
+### Setting up automatic generation of missing images
 
 Create a ```.htaccess``` file in the **images** directory and add the following content:
 

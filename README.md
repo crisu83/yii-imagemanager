@@ -74,3 +74,25 @@ The following configuration parameters are available for the image manager:
 * **ImagineFilter** the base class for all the image filters
 * **ImagineFilterChain** list class that allows you to chain image filters
 * **Image** model class for the image table
+
+## Setting up automatic generation of missing images
+
+Create a ```.htaccess``` file in the **images** directory and add the following content:
+
+```bash
+<IfModule mod_rewrite.c>
+
+        RewriteEngine on
+        
+        # Change this path if necessary.
+        RewriteBase /
+
+        # If the requested file does not exist...
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+
+        # ...and if the source URL points to an image, redirect the request to the image controller.
+        RewriteRule cache/([^/]+)/.*[^\d](\d+)\.(?:gif|jpg|jpeg|png)$ image/create?id=$2&preset=$1 [L,R,QSA]
+
+</IfModule>
+```

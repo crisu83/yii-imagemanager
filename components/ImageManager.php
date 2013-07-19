@@ -248,7 +248,7 @@ class ImageManager extends CApplicationComponent
     public function resolveRawPath($absolute = false)
     {
         $path = $absolute ? $this->getFileManager()->getBasePath() : '';
-        return $path . $this->imageDir . '/' . $this->rawDir . '/';
+        return $path . $this->imageDir . DIRECTORY_SEPARATOR . $this->rawDir . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -258,8 +258,7 @@ class ImageManager extends CApplicationComponent
      */
     public function resolveCachePath($absolute = false)
     {
-        $path = $absolute ? $this->getFileManager()->getBasePath(true) : '';
-        return $path . $this->imageDir . '/' . $this->cacheDir . '/';
+        return $this->getBasePath($absolute) . $this->cacheDir . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -269,8 +268,7 @@ class ImageManager extends CApplicationComponent
      */
     public function resolveCacheUrl($absolute = false)
     {
-        $url = $absolute ? $this->getFileManager()->getBaseUrl(true) : '';
-        return $url . $this->imageDir . '/' . $this->cacheDir . '/';
+        return $this->getBaseUrl($absolute) . $this->cacheDir . '/';
     }
 
     /**
@@ -281,6 +279,28 @@ class ImageManager extends CApplicationComponent
     public function resolveCreateImageUrl($params = array())
     {
         return Yii::app()->createUrl($this->createPresetRoute, $params);
+    }
+
+    /**
+     * Returns the url to the images folder.
+     * @param boolean $absolute whether to return an absolute url.
+     * @return string the url.
+     */
+    public function getBaseUrl($absolute = false)
+    {
+        $path = $absolute ? $this->getFileManager()->getBaseUrl($absolute) : '';
+        return $path . $this->imageDir . '/';
+    }
+
+    /**
+     * Returns the path to the images folder.
+     * @param boolean $absolute whether to return an absolute path.
+     * @return string the path.
+     */
+    public function getBasePath($absolute = true)
+    {
+        $url = $absolute ? $this->getFileManager()->getBasePath($absolute) : '';
+        return $url . $this->imageDir . DIRECTORY_SEPARATOR;
     }
 
     /**

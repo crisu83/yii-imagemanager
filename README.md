@@ -46,12 +46,26 @@ php composer.phar update
 Add the image manager application component to your application configuration:
 
 ```php
-'imageManager' => array(
-  'class' => 'vendor.crisu83.yii-imagemanager.components.ImageManager',
-  'presets' => array(
-    'myPreset' => array(
-       array('thumbnail', 'width' => 160, 'height' => 90, 'mode' => 'outbound'),
+'components' => array(
+  .....
+  'imageManager' => array(
+    'class' => 'vendor.crisu83.yii-imagemanager.components.ImageManager',
+    'presets' => array(
+      'myPreset' => array(
+         array('thumbnail', 'width' => 160, 'height' => 90, 'mode' => 'outbound'),
+      ),
     ),
+  ),
+),
+```
+
+Add the image console command to your application configuration:
+
+```php
+'commandMap' => array(
+  .....
+  'image' => array(
+    'class' => 'vendor.crisu83.yii-imagemanager.commands.ImageCommand',
   ),
 ),
 ```
@@ -79,22 +93,13 @@ The following configuration parameters are available for the image manager:
 
 ### Setting up automatic generation of missing images
 
-Create a ```.htaccess``` file in the **images** directory and add the following content:
+Run the following command through yiic:
 
 ```bash
-<IfModule mod_rewrite.c>
-
-        RewriteEngine on
-        
-        # Change this path if necessary.
-        RewriteBase /
-
-        # If the requested file does not exist...
-        RewriteCond %{REQUEST_FILENAME} !-f
-        RewriteCond %{REQUEST_FILENAME} !-d
-
-        # ...and if the source URL points to an image, redirect the request to the image controller.
-        RewriteRule cache/([^/]+)/.*[^\d](\d+)\.(?:gif|jpg|jpeg|png)$ image/createPreset?id=$2&name=$1 [L,R,QSA]
-
-</IfModule>
+yiic image createAccessFile --baseUrl="<base/url>" --path="<path/to/images>"
 ```
+
+The following arguments are available for the createAccessFile action:
+
+* **baseUrl** the rewrite base url to use
+* **path** the full path to the access file to create

@@ -41,7 +41,10 @@ class ImageManager extends CApplicationComponent
      *
      * 'presets' => array(
      *   'myPreset' => array(
-     *     array('thumbnail', 'width' => 160, 'height' => 90),
+     *     'allowCache' => true,
+     *     'filters' => array(
+     *        array('thumbnail', 'width' => 160, 'height' => 90),
+     *     ),
      *   ),
      * ),
      */
@@ -59,6 +62,10 @@ class ImageManager extends CApplicationComponent
      */
     public $cacheDir = 'cache';
     /**
+     * @var string @todo
+     */
+    public $createPresetRoute = 'image/createPreset';
+    /**
      * @var string the name of the image model class.
      */
     public $modelClass = 'Image';
@@ -69,6 +76,8 @@ class ImageManager extends CApplicationComponent
 
     /** @var FileManager */
     private $_fileManager;
+    /** @var ImagePreset[] */
+    private $_presets;
     /** @var ImagineFilterChain[] */
     private $_filterChains;
     /** @var ImagineInterface */
@@ -84,17 +93,27 @@ class ImageManager extends CApplicationComponent
         $this->createPathAlias('imageManager', __DIR__ . '/..');
         $this->import('filters.*');
         $this->import('models.*');
-        $this->initFilterChains();
+        $this->initPresets();
     }
 
     /**
-     * Creates filter chains from the presets.
+     * Initializes the image presets if applicable.
      */
-    protected function initFilterChains()
+    protected function initPresets()
     {
-        $this->_filterChains = array();
-        foreach ($this->presets as $name => $filters) {
-            $this->_filterChains[$name] = ImagineFilterChain::create($filters);
+        $this->_presets = array();
+        if (!empty($this->presets))
+        {
+            foreach ($this->presets as $name => $config) {
+                if (!isset($config['class'])) {
+                    $config['class'] = 'imageManager.components.ImagePreset';
+                }
+                $config['name'] = $name;
+                $preset = Yii::createComponent($config);
+                $preset->init();
+                $preset->setManager($this);
+                $this->_presets[$name] = $preset;
+            }
         }
     }
 
@@ -106,82 +125,44 @@ class ImageManager extends CApplicationComponent
      */
     public function createPresetUrl($id, $name)
     {
-        $model     = $this->loadModel($id);
-        $cacheUrl  = $this->resolvePresetCacheUrl($name);
-        $imagePath = $model->resolveFilePath();
-        return $cacheUrl . $imagePath;
+        $preset = $this->getPreset($name);
+        if (!$preset->allowCache) {
+            $params = array('id' => $id, 'name' => $name);
+            $url = $this->resolveCreateImageUrl($params);
+        } else {
+            $model     = $this->loadModel($id);
+            $cacheUrl  = $preset->resolveCacheUrl();
+            $imagePath = $model->resolveFilePath();
+            $url = $cacheUrl . $imagePath;
+        }
+        return $url;
     }
 
     /**
-     * Creates an image preset for the image model with the given id.
+     * Creates a preset image for the image model with the given id.
      * @param integer $id the model id.
      * @param string $name the preset name.
      * @return ImageInterface the image.
      * @throws CException if the preset name is invalid.
      */
-    public function createPreset($id, $name)
+    public function createPresetImage($id, $name)
     {
-        if (!isset($this->presets[$name])) {
-            throw new CException('Failed to create preset.');
+        $preset = $this->getPreset($name);
+        if ($preset === null) {
+            throw new CException(sprintf('Failed to create preset image. Preset "%s" not defined.', $name));
         }
-        $filter    = $this->getPresetFilterChain($name);
-        $model     = $this->loadModel($id);
-        $file      = $model->getFile();
-        $rawPath   = $file->resolvePath();
-        $image     = $this->openImage($rawPath);
-        $image     = $filter->apply($image);
-        $path      = $file->getPath();
-        $path      = $this->normalizePath($path);
-        $cachePath = $this->resolvePresetCachePath($name) . $path;
+        $filterChain = $preset->getFilterChain();
+        $model       = $this->loadModel($id);
+        $file        = $model->getFile();
+        $rawPath     = $file->resolvePath();
+        $image       = $this->openImage($rawPath);
+        $image       = $filterChain->apply($image);
+        $filePath    = $this->normalizePath($file->getPath());
+        $cachePath   = $preset->resolveCachePath() . $filePath;
         $this->getFileManager()->createDirectory($cachePath);
         $cached = $cachePath . $file->resolveFilename();
         $image->save($cached);
         $image->show($file->extension);
-    }
-
-    /**
-     * Returns the pre-configured filter chain for a specific preset.
-     * @param string $name the preset name.
-     * @return ImagineFilterChain the filter chain.
-     */
-    protected function getPresetFilterChain($name)
-    {
-        return isset($this->_filterChains[$name]) ? $this->_filterChains[$name] : null;
-    }
-
-    /**
-     * Returns the path for a cached image preset.
-     * @param string $name the preset name.
-     * @param boolean $absolute whether to return an absolute path.
-     * @return string the path.
-     */
-    protected function resolvePresetCachePath($name, $absolute = true)
-    {
-        $checksum = $this->calculateCacheChecksum($this->presets[$name]);
-        return $this->resolveCachePath($absolute) . $name . '/' . $checksum . '/';
-    }
-
-    /**
-     * Returns the url to a cached image preset.
-     * @param string $name the preset name.
-     * @param boolean $absolute whether to return an absolute url.
-     * @return string the url.
-     */
-    protected function resolvePresetCacheUrl($name, $absolute = true)
-    {
-        $checksum = $this->calculateCacheChecksum($this->presets[$name]);
-        return $this->resolveCacheUrl($absolute) . $name . '/' . $checksum . '/';
-    }
-
-    /**
-     * Calculates the checksum from the given preset configuration.
-     * Override this method to change how to checksum is calculated.
-     * @param array $config the preset configuration.
-     * @return string the checksum.
-     */
-    protected function calculateCacheChecksum($config)
-    {
-        return sprintf('%x', crc32(CJSON::encode($config)));
     }
 
     /**
@@ -204,12 +185,12 @@ class ImageManager extends CApplicationComponent
      */
     public function saveModel($file, $name = null, $path = null)
     {
-        $fileManager = $this->getFileManager();
-        $path        = $this->resolveRawPath() . $path;
-        $file        = $fileManager->saveModel($file, $name, $path);
         /* @var Image $model */
         $model = new $this->modelClass();
         $model->setManager($this);
+        $fileManager   = $this->getFileManager();
+        $path          = $this->resolveRawPath() . $path;
+        $file          = $fileManager->saveModel($file, $name, $path);
         $savePath      = $file->resolvePath();
         $image         = $this->openImage($savePath);
         $model->fileId = $file->id;
@@ -217,7 +198,7 @@ class ImageManager extends CApplicationComponent
         $model->width  = $size->getWidth();
         $model->height = $size->getHeight();
         if (!$model->save()) {
-            throw new CException('Failed to save image. Database record could not be saved.');
+            throw new CException('Failed to save image model. Database record could not be saved.');
         }
         return $model;
     }
@@ -232,7 +213,7 @@ class ImageManager extends CApplicationComponent
         /* @var Image $model */
         $model = CActiveRecord::model($this->modelClass)->findByPk($id);
         if ($model === null) {
-            throw new CException('Failed to load image model.');
+            throw new CException('Failed to load image model. Record not found.');
         }
         $model->setManager($this);
         return $model;
@@ -290,6 +271,26 @@ class ImageManager extends CApplicationComponent
     {
         $url = $absolute ? $this->getFileManager()->getBaseUrl(true) : '';
         return $url . $this->imageDir . '/' . $this->cacheDir . '/';
+    }
+
+    /**
+     * Returns the url for creating an image preset.
+     * @param array $params additional GET parameters.
+     * @return string the url.
+     */
+    public function resolveCreateImageUrl($params = array())
+    {
+        return Yii::app()->createUrl($this->createPresetRoute, $params);
+    }
+
+    /**
+     * Returns the preset component with the given name.
+     * @param string $name the preset name.
+     * @return ImagePreset the component.
+     */
+    public function getPreset($name)
+    {
+        return isset($this->_presets[$name]) ? $this->_presets[$name] : null;
     }
 
     /**

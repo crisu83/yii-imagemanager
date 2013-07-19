@@ -27,11 +27,11 @@ class ImageController extends CController
     /**
      * Creates a new image preset.
      * @param integer $id the model id.
-     * @param string $preset the preset name.
+     * @param string $name the preset name.
      */
-    public function actionCreate($id, $preset)
+    public function actionCreatePreset($id, $name)
     {
-        $this->getImageManager()->createPreset($id, $preset);
+        $this->getImageManager()->createPresetImage($id, $name);
     }
 
     /**

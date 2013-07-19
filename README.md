@@ -94,7 +94,7 @@ Create a ```.htaccess``` file in the **images** directory and add the following 
         RewriteCond %{REQUEST_FILENAME} !-d
 
         # ...and if the source URL points to an image, redirect the request to the image controller.
-        RewriteRule cache/([^/]+)/.*[^\d](\d+)\.(?:gif|jpg|jpeg|png)$ image/create?id=$2&preset=$1 [L,R,QSA]
+        RewriteRule cache/([^/]+)/.*[^\d](\d+)\.(?:gif|jpg|jpeg|png)$ image/createPreset?id=$2&name=$1 [L,R,QSA]
 
 </IfModule>
 ```

@@ -78,8 +78,6 @@ class ImageManager extends CApplicationComponent
     private $_fileManager;
     /** @var ImagePreset[] */
     private $_presets;
-    /** @var ImagineFilterChain[] */
-    private $_filterChains;
     /** @var ImagineInterface */
     private $_factory;
 
@@ -161,6 +159,7 @@ class ImageManager extends CApplicationComponent
         $cachePath   = $preset->resolveCachePath() . $filePath;
         $this->getFileManager()->createDirectory($cachePath);
         $cached = $cachePath . $file->resolveFilename();
+        // todo: now the file is always generated, consider adding support for using the existing file in some cases.
         $image->save($cached);
         $image->show($file->extension);
     }
@@ -177,11 +176,11 @@ class ImageManager extends CApplicationComponent
 
     /**
      * Saves an image file on the hard drive and in the database.
-     * @param CUploadedFile $file
+     * @param CUploadedFile $file the uploaded file instance.
      * @param string $name the file name.
      * @param string $path the file path.
      * @return Image the image model.
-     * @throws CException
+     * @throws CException if saving the image model is not successful.
      */
     public function saveModel($file, $name = null, $path = null)
     {
@@ -207,6 +206,7 @@ class ImageManager extends CApplicationComponent
      * Loads an image model.
      * @param integer $id the model id.
      * @return Image the model.
+     * @throws CException if the image model is not found.
      */
     public function loadModel($id)
     {

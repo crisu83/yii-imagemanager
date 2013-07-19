@@ -12,6 +12,7 @@
  */
 class ImagePreset extends CComponent
 {
+    // todo: consider adding support for settings HTTP headers when rendering preset images.
     /**
      * @var string the preset name.
      */
@@ -24,11 +25,6 @@ class ImagePreset extends CComponent
      * @var array the filter configurations.
      */
     public $filters = array();
-    /**
-     * @var array http headers to set when rendering the image.
-     * @todo
-     */
-    //public $headers = array();
 
     /** @var ImagineFilterChain */
     protected $_filterChain;

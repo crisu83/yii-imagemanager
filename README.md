@@ -59,6 +59,16 @@ Add the image manager application component to your application configuration:
 ),
 ```
 
+The following configuration parameters are available for the image manager:
+
+* **driver** the image driver to use, valid drivers are ```gd```, ```imagick``` and ```gmagick```
+* **presets** the preset filter configurations
+* **imageDir** the name of the images directory
+* **rawDir** the name of the directory with the unmodified images
+* **cacheDir** the name of the direcotry with the cached images
+* **modelClass** the name of the image model class
+* **filterManagerID** the component ID for the file manager component
+
 Add the image console command to your application configuration:
 
 ```php
@@ -70,21 +80,12 @@ Add the image console command to your application configuration:
 ),
 ```
 
-The following configuration parameters are available for the image manager:
-
-* **driver** the image driver to use, valid drivers are ```gd```, ```imagick``` and ```gmagick```
-* **presets** the preset filter configurations
-* **imageDir** the name of the images directory
-* **rawDir** the name of the directory with the unmodified images
-* **cacheDir** the name of the direcotry with the cached images
-* **modelClass** the name of the image model class
-* **filterManagerID** the component ID for the file manager component
-
 ## What's included?
 
 * **ImageBehavior** behavior that ease saving, rendering and deleting of images associated with active records
+* **ImageCommand** console command for running shell tasks 
 * **ImageManager** application component that provides centralized access
-* **ImageController** controller that allows generation of presets via URL
+* **ImageController** controller for running actions via an URL
 * **ImagineFilter** the base class for all the image filters
 * **ImagineFilterChain** list class that allows you to chain image filters
 * **Image** model class for the image table

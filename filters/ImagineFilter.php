@@ -86,7 +86,7 @@ abstract class ImagineFilter extends CComponent
      * @param array $params filter options.
      * @return ImagineFilter the filter.
      */
-    public static function createFilter($name, $params = array())
+    public static function create($name, $params = array())
     {
         if (isset(self::$builtInFilters[$name])) {
             $className = Yii::import(self::$builtInFilters[$name], true);

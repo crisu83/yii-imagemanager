@@ -88,7 +88,8 @@ class ImageManager extends CApplicationComponent
     {
         parent::init();
         $this->attachBehavior('ext', new ComponentBehavior);
-        $this->createPathAlias('imageManager', __DIR__ . '/..');
+        $this->createPathAlias('imageManager', realpath(__DIR__ . DIRECTORY_SEPARATOR . '..'));
+        $this->import('components.*');
         $this->import('filters.*');
         $this->import('models.*');
         $this->initPresets();
@@ -100,19 +101,25 @@ class ImageManager extends CApplicationComponent
     protected function initPresets()
     {
         $this->_presets = array();
-        if (!empty($this->presets))
-        {
+        if (!empty($this->presets)) {
             foreach ($this->presets as $name => $config) {
-                if (!isset($config['class'])) {
-                    $config['class'] = 'imageManager.components.ImagePreset';
-                }
                 $config['name'] = $name;
-                $preset = Yii::createComponent($config);
-                $preset->init();
-                $preset->setManager($this);
+                $preset = $this->createPreset($config);
                 $this->_presets[$name] = $preset;
             }
         }
+    }
+
+    /**
+     * Creates an image preset from the given configuration.
+     * @param array $config the configuration.
+     * @return ImagePreset the object.
+     */
+    public function createPreset($config)
+    {
+        $preset = ImagePreset::create($config);
+        $preset->setManager($this);
+        return $preset;
     }
 
     /**
@@ -123,14 +130,14 @@ class ImageManager extends CApplicationComponent
      */
     public function createPresetUrl($id, $name)
     {
-        $preset = $this->getPreset($name);
+        $preset = $this->loadPreset($name);
         if (!$preset->allowCache) {
             $params = array('id' => $id, 'name' => $name);
             $url = $this->resolveCreateImageUrl($params);
         } else {
             $model     = $this->loadModel($id);
             $cacheUrl  = $preset->resolveCacheUrl();
-            $imagePath = $model->resolveFilePath();
+            $imagePath = $this->normalizePath($model->resolveFilePath());
             $url = $cacheUrl . $imagePath;
         }
         return $url;
@@ -145,28 +152,58 @@ class ImageManager extends CApplicationComponent
      */
     public function createPresetImage($id, $name)
     {
-        $preset = $this->getPreset($name);
-        if ($preset === null) {
-            throw new CException(sprintf('Failed to create preset image. Preset "%s" not defined.', $name));
+        $preset   = $this->loadPreset($name);
+        $model    = $this->loadModel($id);
+        $file     = $model->getFile();
+        $rawPath  = $file->resolvePath();
+        if (!$preset->allowCache) {
+            $image = $this->openPresetImage($rawPath, $preset);
+        } else {
+            $filePath = $this->normalizePath($file->getPath());
+            $cachePath = $preset->resolveCachePath() . $filePath;
+            $this->getFileManager()->createDirectory($cachePath);
+            $cachePath .= $file->resolveFilename();
+            if (file_exists($cachePath)) {
+                $image = $this->openImage($cachePath);
+            } else {
+                $image = $this->openPresetImage($rawPath, $preset);
+                $image->save($cachePath);
+            }
         }
-        $filterChain = $preset->getFilterChain();
-        $model       = $this->loadModel($id);
-        $file        = $model->getFile();
-        $rawPath     = $file->resolvePath();
-        $image       = $this->openImage($rawPath);
-        $image       = $filterChain->apply($image);
-        $filePath    = $this->normalizePath($file->getPath());
-        $cachePath   = $preset->resolveCachePath() . $filePath;
-        $this->getFileManager()->createDirectory($cachePath);
-        $cached = $cachePath . $file->resolveFilename();
-        // todo: now the file is always generated, consider adding support for using the existing file in some cases.
-        $image->save($cached);
         $image->show($file->extension);
+    }
+
+    /**
+     * Opens and image using a specific preset.
+     * @param string $path the image path.
+     * @param ImagePreset $preset the preset.
+     * @return ImageInterface the image.
+     */
+    protected function openPresetImage($path, $preset)
+    {
+        $image = $this->openImage($path);
+        $image = $preset->applyFilters($image);
+        return $image;
+    }
+
+    /**
+     * Loads a specific preset.
+     * @param string $name the preset name.
+     * @return ImagePreset the preset.
+     * @throws CException if the preset is not found.
+     */
+    public function loadPreset($name)
+    {
+        if (!isset($this->_presets[$name])) {
+            throw new CException(sprintf('Failed to load preset. Preset "%s" not defined.', $name));
+        }
+        return $this->_presets[$name];
     }
 
     /**
      * Normalizes the given path by removing the raw path.
      * @param string $path the path to normalize.
+     * @param string $glue the directory separator.
      * @return string the path.
      */
     public function normalizePath($path)
@@ -241,37 +278,6 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
-     * Returns the path to the raw images.
-     * @param boolean $absolute whether the path should be absolute.
-     * @return string the path.
-     */
-    public function resolveRawPath($absolute = false)
-    {
-        $path = $absolute ? $this->getFileManager()->getBasePath() : '';
-        return $path . $this->imageDir . DIRECTORY_SEPARATOR . $this->rawDir . DIRECTORY_SEPARATOR;
-    }
-
-    /**
-     * Returns the path to the cached images.
-     * @param boolean $absolute whether the path should be absolute.
-     * @return string the path.
-     */
-    public function resolveCachePath($absolute = false)
-    {
-        return $this->getBasePath($absolute) . $this->cacheDir . DIRECTORY_SEPARATOR;
-    }
-
-    /**
-     * Returns the url to the cached images.
-     * @param boolean $absolute whether the url should be absolute.
-     * @return string the url.
-     */
-    public function resolveCacheUrl($absolute = false)
-    {
-        return $this->getBaseUrl($absolute) . $this->cacheDir . '/';
-    }
-
-    /**
      * Returns the url for creating an image preset.
      * @param array $params additional GET parameters.
      * @return string the url.
@@ -282,14 +288,45 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
-     * Returns the url to the images folder.
-     * @param boolean $absolute whether to return an absolute url.
+     * Returns the path to the raw images.
+     * @param boolean $absolute whether the path should be absolute.
+     * @return string the path.
+     */
+    public function resolveRawPath($absolute = false)
+    {
+        $path = array();
+        if ($absolute) {
+            $path[] = $this->getFileManager()->getBasePath();
+        }
+        $path[] = $this->imageDir;
+        $path[] = $this->rawDir;
+        return implode('/', $path);
+    }
+
+    /**
+     * Returns the path to the cached images.
+     * @param boolean $absolute whether the path should be absolute.
+     * @return string the path.
+     */
+    public function resolveCachePath($absolute = false)
+    {
+        return implode('/', array(
+            $this->getBasePath($absolute),
+            $this->cacheDir,
+        ));
+    }
+
+    /**
+     * Returns the url to the cached images.
+     * @param boolean $absolute whether the url should be absolute.
      * @return string the url.
      */
-    public function getBaseUrl($absolute = false)
+    public function resolveCacheUrl($absolute = false)
     {
-        $path = $absolute ? $this->getFileManager()->getBaseUrl($absolute) : '';
-        return $path . $this->imageDir . '/';
+        return implode('/', array(
+            $this->getBaseUrl($absolute),
+            $this->cacheDir,
+        ));
     }
 
     /**
@@ -299,18 +336,27 @@ class ImageManager extends CApplicationComponent
      */
     public function getBasePath($absolute = true)
     {
-        $url = $absolute ? $this->getFileManager()->getBasePath($absolute) : '';
-        return $url . $this->imageDir . DIRECTORY_SEPARATOR;
+        $path = array();
+        if ($absolute) {
+            $path[] = $this->getFileManager()->getBasePath();
+        }
+        $path[] = $this->imageDir;
+        return implode('/', $path);
     }
 
     /**
-     * Returns the preset component with the given name.
-     * @param string $name the preset name.
-     * @return ImagePreset the component.
+     * Returns the url to the images folder.
+     * @param boolean $absolute whether to return an absolute url.
+     * @return string the url.
      */
-    public function getPreset($name)
+    public function getBaseUrl($absolute = true)
     {
-        return isset($this->_presets[$name]) ? $this->_presets[$name] : null;
+        $url = array();
+        if ($absolute) {
+            $url[] = $this->getFileManager()->getBaseUrl(true);
+        }
+        $url[] = $this->imageDir;
+        return implode('/', $url);
     }
 
     /**

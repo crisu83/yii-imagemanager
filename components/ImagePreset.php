@@ -7,12 +7,13 @@
  * @package crisu83.yii-imagemanager.components
  */
 
+use Imagine\Image\ImageInterface;
+
 /**
  * Component that represents a single image preset.
  */
 class ImagePreset extends CComponent
 {
-    // todo: consider adding support for settings HTTP headers when rendering preset images.
     /**
      * @var string the preset name.
      */
@@ -21,25 +22,11 @@ class ImagePreset extends CComponent
      * @var boolean whether to allow caching of the preset images.
      */
     public $allowCache = true;
-    /**
-     * @var array the filter configurations.
-     */
-    public $filters = array();
 
-    /** @var ImagineFilterChain */
-    protected $_filterChain;
+    /** @var ImagineFilter[] */
+    protected $_filters;
     /** @var ImageManager */
     protected $_manager;
-
-    /**
-     * Initializes the preset.
-     */
-    public function init()
-    {
-        if (!empty($this->filters)) {
-            $this->_filterChain = ImagineFilterChain::create($this->filters);
-        }
-    }
 
     /**
      * Returns the path to the cached version of the image preset.
@@ -48,8 +35,11 @@ class ImagePreset extends CComponent
      */
     public function resolveCachePath($absolute = true)
     {
-        $checksum = $this->calculateCacheChecksum();
-        return $this->_manager->resolveCachePath($absolute) . $this->name . '/' . $checksum . '/';
+        return implode('/', array(
+            $this->_manager->resolveCachePath($absolute),
+            $this->name,
+            $this->calculateCacheChecksum(),
+        ));
     }
 
     /**
@@ -59,8 +49,11 @@ class ImagePreset extends CComponent
      */
     public function resolveCacheUrl($absolute = true)
     {
-        $checksum = $this->calculateCacheChecksum();
-        return $this->_manager->resolveCacheUrl($absolute) . $this->name . '/' . $checksum . '/';
+        return implode('/', array(
+            $this->_manager->resolveCacheUrl($absolute),
+            $this->name,
+            $this->calculateCacheChecksum(),
+        ));
     }
 
     /**
@@ -74,12 +67,25 @@ class ImagePreset extends CComponent
     }
 
     /**
-     * Returns the filter chain component for this preset.
-     * @return ImagineFilterChain the component.
+     * Adds a filter to this preset.
+     * @param ImagineFilter $filter the filter.
      */
-    public function getFilterChain()
+    public function addFilter($filter)
     {
-        return $this->_filterChain;
+        $this->_filters[] = $filter;
+    }
+
+    /**
+     * Applies the filters in this preset to the given image.
+     * @param ImageInterface $image the image.
+     * @return ImageInterface the image.
+     */
+    public function applyFilters(ImageInterface $image)
+    {
+        foreach ($this->_filters as $filter) {
+            $image = $filter->apply($image);
+        }
+        return $image;
     }
 
     /**
@@ -89,5 +95,35 @@ class ImagePreset extends CComponent
     public function setManager($manager)
     {
         $this->_manager = $manager;
+    }
+
+    /**
+     * Creates a preset with the given configuration.
+     * @param array $config the configuration.
+     * @return ImagePreset the object.
+     */
+    public static function create($config)
+    {
+        if (!isset($config['class'])) {
+            $config['class'] = 'imageManager.components.ImagePreset';
+        }
+        $filters = array();
+        if (isset($config['filters'])) {
+            foreach ($config['filters'] as $filter) {
+                if (is_array($filter)) {
+                    $filter = ImagineFilter::create($filter[0], array_slice($filter, 1));
+                }
+                if (is_object($filter)) {
+                    $filters[] = $filter;
+                }
+            }
+            unset($config['filters']);
+        }
+        /** @var ImagePreset $preset */
+        $preset = Yii::createComponent($config);
+        foreach ($filters as $filter) {
+            $preset->addFilter($filter);
+        }
+        return $preset;
     }
 }

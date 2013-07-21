@@ -17,9 +17,9 @@ This extension is an addition to my yii-filemanager extension.
 * A wide range of image filters such as crop, resize and thumbnail
 * Image presets with support for caching of generated images
 * Storing of uploaded images in the database
-* Supports many graphics libraries including GD, Imagick and Gmagick
+* Supports multiple graphics libraries including GD, Imagick and Gmagick
 * Application component that provides centralized access
-* Image model and active record behavior to ease working with the API
+* Active record behavior to ease working with the API
 
 ## Setup
 
@@ -52,7 +52,10 @@ Add the image manager application component to your application configuration:
     'class' => 'vendor.crisu83.yii-imagemanager.components.ImageManager',
     'presets' => array(
       'myPreset' => array(
-         array('thumbnail', 'width' => 160, 'height' => 90, 'mode' => 'outbound'),
+        'allowCache' => true,
+        'filters' => array(
+          array('thumbnail', 'width' => 160, 'height' => 90, 'mode' => 'outbound'),
+        ),
       ),
     ),
   ),
@@ -85,12 +88,12 @@ Add the image console command to your application configuration:
 * **ImageBehavior** behavior that ease saving, rendering and deleting of images associated with active records
 * **ImageCommand** console command for running shell tasks 
 * **ImageManager** application component that provides centralized access
+* **ImagePreset** component that defines a single image preset
 * **ImageController** controller for running actions via an URL
 * **ImagineFilter** the base class for all the image filters
-* **ImagineFilterChain** list class that allows you to chain image filters
 * **Image** model class for the image table
 
-## Advanced used
+## Advanced use
 
 ### Setting up automatic generation of missing images
 

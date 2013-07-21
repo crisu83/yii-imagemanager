@@ -66,7 +66,7 @@ EOD;
 </IfModule>
 EOD;
         if ((file_put_contents($filename, $data)) === false) {
-            throw new CException(sprintf('Failed to create .htaccess file. Could not write file to path "%s".', $filename));
+            throw new CException(sprintf('Failed to create access file. Could not write file to path "%s".', $filename));
         }
         echo "File {$filename} created.\n";
     }

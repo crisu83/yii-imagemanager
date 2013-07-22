@@ -19,6 +19,10 @@ class ImagePreset extends CComponent
      */
     public $name;
     /**
+     * @var string the image file format.
+     */
+    public $format;
+    /**
      * @var boolean whether to allow caching of the preset images.
      */
     public $allowCache = true;

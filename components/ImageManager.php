@@ -124,11 +124,11 @@ class ImageManager extends CApplicationComponent
 
     /**
      * Creates the url for a specific image preset.
-     * @param integer $id the model id.
      * @param string $name the preset name.
+     * @param integer $id the model id.
      * @return string the url.
      */
-    public function createPresetUrl($id, $name)
+    public function createPresetUrl($name, $id)
     {
         $preset = $this->loadPreset($name);
         if (!$preset->allowCache) {
@@ -145,45 +145,27 @@ class ImageManager extends CApplicationComponent
 
     /**
      * Creates a preset image for the image model with the given id.
-     * @param integer $id the model id.
      * @param string $name the preset name.
+     * @param integer $id the model id.
+     * @param string $format the image file format.
      * @return ImageInterface the image.
-     * @throws CException if the preset name is invalid.
      */
-    public function createPresetImage($id, $name)
+    public function createPresetImage($name, $id, $format)
     {
-        $preset   = $this->loadPreset($name);
-        $model    = $this->loadModel($id);
-        $file     = $model->getFile();
-        $rawPath  = $file->resolvePath();
-        if (!$preset->allowCache) {
-            $image = $this->openPresetImage($rawPath, $preset);
-        } else {
-            $filePath = $this->normalizePath($file->getPath());
-            $cachePath = $preset->resolveCachePath() . $filePath;
-            $this->getFileManager()->createDirectory($cachePath);
-            $cachePath .= $file->resolveFilename();
-            if (file_exists($cachePath)) {
-                $image = $this->openImage($cachePath);
-            } else {
-                $image = $this->openPresetImage($rawPath, $preset);
-                $image->save($cachePath);
-            }
+        $preset    = $this->loadPreset($name);
+        $model     = $this->loadModel($id);
+        $file      = $model->getFile();
+        $rawPath   = $file->resolvePath();
+        $image     = $this->openImage($rawPath);
+        $image     = $preset->applyFilters($image);
+        $filePath  = $this->normalizePath($file->getPath());
+        $cachePath = $preset->resolveCachePath() . $filePath;
+        $this->getFileManager()->createDirectory($cachePath);
+        if (isset($preset->format)) {
+            $format = $preset->format;
         }
-        $image->show($file->extension);
-    }
-
-    /**
-     * Opens and image using a specific preset.
-     * @param string $path the image path.
-     * @param ImagePreset $preset the preset.
-     * @return ImageInterface the image.
-     */
-    protected function openPresetImage($path, $preset)
-    {
-        $image = $this->openImage($path);
-        $image = $preset->applyFilters($image);
-        return $image;
+        $cachePath .= $file->resolveFilename($format);
+        return $image->save($cachePath, array('format' => $format));
     }
 
     /**

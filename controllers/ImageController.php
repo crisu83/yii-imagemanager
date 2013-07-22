@@ -26,12 +26,16 @@ class ImageController extends CController
 
     /**
      * Creates a new image preset.
-     * @param integer $id the model id.
      * @param string $name the preset name.
+     * @param integer $id the model id.
+     * @param string $format the image format.
      */
-    public function actionCreatePreset($id, $name)
+    public function actionCreatePreset($name, $id, $format)
     {
-        $this->getImageManager()->createPresetImage($id, $name);
+        $image = $this->getImageManager()->createPresetImage($name, $id, $format);
+
+        $image->show($format);
+        Yii::app()->end();
     }
 
     /**

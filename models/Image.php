@@ -18,6 +18,12 @@
  */
 class Image extends CActiveRecord
 {
+    // Most commonly used image formats.
+    const FORMAT_GIF  = 'gif';
+    const FORMAT_JPEG = 'jpeg';
+    const FORMAT_JPG  = 'jpg';
+    const FORMAT_PNG  = 'png';
+
     /** @var ImageManager */
     private $_manager;
 

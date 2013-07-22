@@ -61,7 +61,7 @@ EOD;
         RewriteCond %{REQUEST_FILENAME} !-d
 
         # ...and if the source URL points to an image, we redirect to the create image URL.
-        RewriteRule {$cacheDir}/([^/]+)/.*[^\d](\d+)\.(?:gif|jpg|jpeg|png)$ {$createPresetRoute}?id=$2&name=$1 [L,R,QSA]
+        RewriteRule {$cacheDir}/([^/]+)/.*[^\d](\d+)\.(gif|jpg|jpeg|png)$ {$createPresetRoute}?name=$1&id=$2&format=$3 [L,R=302,QSA]
 
 </IfModule>
 EOD;

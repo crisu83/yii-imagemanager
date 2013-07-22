@@ -11,6 +11,7 @@
     "minimum-stability": "dev",
     "require": {
         "crisu83/yii-extension": "dev-no-namespaces",
+        "crisu83/yii-filemanager": "dev-master",
         "imagine/imagine": "0.6.*@dev"
     }
 }

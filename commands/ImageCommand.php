@@ -41,11 +41,12 @@ EOD;
 
     /**
      * Creates an access file for rewriting missing images to the image controller.
-     * @param string $baseUrl the rewrite base url.
-     * @param string $filename the full path for the access file.
+     * @param string $path the path to the directory where the access file should be created.
+     * @param string $baseUrl the rewrite base url (defaults to '/')..
+     * @param string $filename the filename for the access file (defaults to '.htaccess').
      * @throws CException if the access file cannot be created.
      */
-    public function actionCreateAccessFile($baseUrl, $filename)
+    public function actionCreateAccessFile($path, $baseUrl = '/', $filename = '.htaccess')
     {
         $imageManager = $this->getImageManager();
         $cacheDir = $imageManager->cacheDir;
@@ -65,7 +66,9 @@ EOD;
 
 </IfModule>
 EOD;
-        if ((file_put_contents($filename, $data)) === false) {
+        $this->ensureDirectory($path);
+        $filePath = $path . '/' . $filename;
+        if ((file_put_contents($filePath, $data)) === false) {
             throw new CException(sprintf('Failed to create access file. Could not write file to path "%s".', $filename));
         }
         echo "File {$filename} created.\n";

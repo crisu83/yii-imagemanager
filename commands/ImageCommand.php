@@ -34,7 +34,7 @@ DESCRIPTION
   Console command for performing shell tasks associated with the yii-imagemanager extension.
 
 EXAMPLES
- * yiic image createAccessFile --baseUrl="/" --filename="/var/www/files/images/.htaccess"
+ * yiic image createAccessFile --path="/var/www/files/images" --baseUrl="/" --filename=".htaccess"
    Creates an .htaccess file in the "/var/www/files/images" directory with "/" as its rewrite base url.
 EOD;
     }

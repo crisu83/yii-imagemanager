@@ -10,7 +10,6 @@
 use Imagine\Filter\FilterInterface;
 use Imagine\Image\Box;
 use Imagine\Image\BoxInterface;
-use Imagine\Image\Color;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Point;
 use Imagine\Image\PointInterface;
@@ -115,16 +114,21 @@ abstract class ImagineFilter extends CComponent
     /**
      * Creates an Imagine color object.
      * @param mixed $color the color.
-     * @return Color the object.
+     * @return Imagine\Image\Palette\RGB the object.
      */
     protected function createColor($color)
     {
-        if (is_array($color) && isset($color[0], $color[1])) {
+        if (is_array($color)) {
             list($color, $alpha) = $color;
-        } else {
+        }
+        if (!isset($color)) {
+            $color = '#ffffff';
+        }
+        if (!isset($alpha)) {
             $alpha = 0;
         }
-        return new Color($color, $alpha);
+        $palette = new Imagine\Image\Palette\RGB();
+        return $palette->color($color, $alpha);
     }
 
     /**

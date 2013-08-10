@@ -50,7 +50,7 @@ EOD;
     {
         $imageManager = $this->getImageManager();
         $cacheDir = $imageManager->cacheDir;
-        $createPresetRoute = $imageManager->createPresetRoute;
+        $presetRoute = $imageManager->presetRoute;
         $data = <<<EOD
 <IfModule mod_rewrite.c>
 
@@ -62,7 +62,7 @@ EOD;
         RewriteCond %{REQUEST_FILENAME} !-d
 
         # ...and if the source URL points to an image, we redirect to the create image URL.
-        RewriteRule {$cacheDir}/([^/]+)/.*[^\d](\d+)\.(gif|jpg|jpeg|png)$ {$createPresetRoute}?name=$1&id=$2&format=$3 [L,R=302,QSA]
+        RewriteRule {$cacheDir}/([^/]+)/.*[^\d](\d+)\.(gif|jpg|jpeg|png)$ {$presetRoute}?name=$1&id=$2&format=$3 [L,R=302,QSA]
 
 </IfModule>
 EOD;

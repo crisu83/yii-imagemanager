@@ -62,9 +62,9 @@ class ImageManager extends CApplicationComponent
      */
     public $cacheDir = 'cache';
     /**
-     * @var string @todo
+     * @var string the route for creating a preset image (preset must be predefined).
      */
-    public $createPresetRoute = 'image/createPreset';
+    public $presetRoute = 'image/preset';
     /**
      * @var string the name of the image model class.
      */
@@ -177,7 +177,7 @@ class ImageManager extends CApplicationComponent
     public function loadPreset($name)
     {
         if (!isset($this->_presets[$name])) {
-            throw new CException(sprintf('Failed to load preset. Preset "%s" not defined.', $name));
+            throw new CException(sprintf('Failed to load preset. Preset "%s" is not defined.', $name));
         }
         return $this->_presets[$name];
     }
@@ -266,7 +266,7 @@ class ImageManager extends CApplicationComponent
      */
     public function resolveCreateImageUrl($params = array())
     {
-        return Yii::app()->createUrl($this->createPresetRoute, $params);
+        return Yii::app()->createUrl($this->presetRoute, $params);
     }
 
     /**

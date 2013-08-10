@@ -13,10 +13,6 @@
 class ImageController extends CController
 {
     /**
-     * @var string the default controller action.
-     */
-    public $defaultAction = 'create';
-    /**
      * @var string the image manager component id.
      */
     public $componentID = 'imageManager';
@@ -25,17 +21,33 @@ class ImageController extends CController
     private $_imageManager;
 
     /**
-     * Creates a new image preset.
+     * Creates a new image preset from an existing image.
      * @param string $name the preset name.
      * @param integer $id the model id.
      * @param string $format the image format.
      */
-    public function actionCreatePreset($name, $id, $format)
+    public function actionPreset($name, $id, $format)
     {
         $image = $this->getImageManager()->createPresetImage($name, $id, $format);
-
         $image->show($format);
         Yii::app()->end();
+    }
+
+    /**
+     * Creates a new image by filtering an existing image.
+     * @param integer $id the model id.
+     * @param string $format the image format.
+     * @throws CException if a required parameters is missing.
+     */
+    public function actionFilter($id, $format)
+    {
+        if (!isset($_GET['config'])) {
+            throw new CException('Failed to filter image. Required parameter "config" is missing.');
+        }
+        $image = $this->getImageManager()->loadModel($id);
+        $preset = ImagePreset::create(array('filters' => $_GET['config']));
+        $image = $preset->applyFilters($image);
+        $image->show($format);
     }
 
     /**

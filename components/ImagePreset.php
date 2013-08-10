@@ -33,6 +33,14 @@ class ImagePreset extends CComponent
     protected $_manager;
 
     /**
+     * Initializes the preset.
+     */
+    public function init()
+    {
+        $this->_filters = array();
+    }
+
+    /**
      * Returns the path to the cached version of the image preset.
      * @param boolean $absolute whether the path should be absolute.
      * @return string the path.
@@ -125,6 +133,7 @@ class ImagePreset extends CComponent
         }
         /** @var ImagePreset $preset */
         $preset = Yii::createComponent($config);
+        $preset->init();
         foreach ($filters as $filter) {
             $preset->addFilter($filter);
         }

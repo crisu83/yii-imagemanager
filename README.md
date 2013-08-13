@@ -5,7 +5,7 @@ Image manager extension for the Yii PHP framework.
 
 ## Introduction
 
-I started this project to reduce the need for boilerplate code when working with iamges in my Yii applications.
+I started this project to reduce the need for boilerplate code when working with images in my Yii applications.
 The goal was not to provide an user interface for image management but to wrap the powerful Imagine library using
 Yii's conventions. Imagine is one of the best image manipulation libraries for PHP and comes with a wide range
 of different image filters and supports all the major graphics libraries. 
@@ -86,7 +86,7 @@ Add the image console command to your application configuration:
 ## What's included?
 
 * **ImageBehavior** behavior that ease saving, rendering and deleting of images associated with active records
-* **ImageCommand** console command for running shell tasks 
+* **ImageCommand** console command for running shell tasks
 * **ImageManager** application component that provides centralized access
 * **ImagePreset** component that defines a single image preset
 * **ImageController** controller for running actions via an URL

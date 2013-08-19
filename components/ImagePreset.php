@@ -51,7 +51,7 @@ class ImagePreset extends CComponent
             $this->_manager->resolveCachePath($absolute),
             $this->name,
             $this->calculateCacheChecksum(),
-        ));
+        )) . '/';
     }
 
     /**
@@ -65,7 +65,7 @@ class ImagePreset extends CComponent
             $this->_manager->resolveCacheUrl($absolute),
             $this->name,
             $this->calculateCacheChecksum(),
-        ));
+        )) . '/';
     }
 
     /**

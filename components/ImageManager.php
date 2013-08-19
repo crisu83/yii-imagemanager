@@ -282,7 +282,7 @@ class ImageManager extends CApplicationComponent
         }
         $path[] = $this->imageDir;
         $path[] = $this->rawDir;
-        return implode('/', $path);
+        return implode('/', $path) . '/';
     }
 
     /**
@@ -323,7 +323,7 @@ class ImageManager extends CApplicationComponent
             $path[] = $this->getFileManager()->getBasePath();
         }
         $path[] = $this->imageDir;
-        return implode('/', $path);
+        return implode('/', $path) . '/';
     }
 
     /**

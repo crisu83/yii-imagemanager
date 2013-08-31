@@ -62,11 +62,20 @@ class Image extends CActiveRecord
     public function attributeLabels()
     {
         return array(
-            'id'     => Yii::t('label', 'ID'),
-            'fileId' => Yii::t('label', 'File'),
-            'width'  => Yii::t('label', 'Width'),
-            'height' => Yii::t('label', 'Height'),
+            'id'     => 'ID',
+            'fileId' => 'File',
+            'width'  => 'Width',
+            'height' => 'Height',
         );
+    }
+
+    /**
+     * Returns the image instance associated with this model.
+     * @return \Imagine\Image\ImageInterface the image.
+     */
+    public function openImage()
+    {
+        return $this->_manager->openImage($this->file->resolvePath());
     }
 
     /**

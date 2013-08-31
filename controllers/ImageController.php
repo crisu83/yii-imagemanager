@@ -42,9 +42,10 @@ class ImageController extends CController
     public function actionFilter($id, $format)
     {
         if (!isset($_GET['config'])) {
-            throw new CException('Failed to filter image. Required parameter "config" is missing.');
+            throw new CException('You have to provide a "config" parameter.');
         }
-        $image = $this->getImageManager()->loadModel($id);
+        $model = $this->getImageManager()->loadModel($id);
+        $image = $model->openImage();
         $preset = ImagePreset::create(array('filters' => $_GET['config']));
         $image = $preset->applyFilters($image);
         $image->show($format);

@@ -50,19 +50,24 @@ EOD;
     {
         $imageManager = $this->getImageManager();
         $cacheDir = $imageManager->cacheDir;
+        $holderDir = $imageManager->holderDir;
+        $holderRoute = $imageManager->holderRoute;
         $presetRoute = $imageManager->presetRoute;
+        $baseUrl = '/' . ltrim($baseUrl, '/');
         $data = <<<EOD
 <IfModule mod_rewrite.c>
 
-        RewriteEngine on
-        RewriteBase {$baseUrl}
+    RewriteEngine on
+    RewriteBase {$baseUrl}
 
-        # If the requested file or directory does not exist...
-        RewriteCond %{REQUEST_FILENAME} !-f
-        RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
 
-        # ...and if the source URL points to an image, we redirect to the create image URL.
-        RewriteRule {$cacheDir}/([^/]+)/.*[^\d](\d+)\.(gif|jpg|jpeg|png)$ {$presetRoute}?name=$1&id=$2&format=$3 [L,R=302,QSA]
+    # Rewrite rule for missing placeholder images.
+    RewriteRule {$cacheDir}/([^/]+)/.*/{$holderDir}/(.*)\.(gif|jpg|jpeg|png)$ {$holderRoute}?name=$2&preset=$1&format=$3 [L,R=302,QSA]
+
+    # Rewrite rule for missing images.
+    RewriteRule {$cacheDir}/([^/]+)/.*[^\d](\d+)\.(gif|jpg|jpeg|png)$ {$presetRoute}?name=$1&id=$2&format=$3 [L,R=302,QSA]
 
 </IfModule>
 EOD;

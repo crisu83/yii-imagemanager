@@ -47,7 +47,6 @@ class ImageManager extends CApplicationComponent
      *
      * 'presets' => array(
      *   'myPreset' => array(
-     *     'allowCache' => true,
      *     'filters' => array(
      *        array('thumbnail', 'width' => 160, 'height' => 90),
      *     ),
@@ -55,6 +54,10 @@ class ImageManager extends CApplicationComponent
      * ),
      */
     public $presets = array();
+    /**
+     * @var array the placeholder configurations (name => filename).
+     */
+    public $holders = array();
     /**
      * @var string the name of the images directory.
      */
@@ -68,17 +71,25 @@ class ImageManager extends CApplicationComponent
      */
     public $cacheDir = 'cache';
     /**
+     * @var string the name of the directory with the placeholder images.
+     */
+    public $holderDir = 'holder';
+    /**
      * @var string the route for creating a preset image (preset must be predefined).
      */
     public $presetRoute = 'image/preset';
     /**
+     * @var string the route for creating a placeholder image.
+     */
+    public $holderRoute = 'image/holder';
+    /**
+     * @var string the placeholder text for holder.js.
+     */
+    public $clientHolderText = 'No image';
+    /**
      * @var string the name of the image model class.
      */
     public $modelClass = 'Image';
-    /**
-     * @var string the placeholder text.
-     */
-    public $placeholderText = 'No image';
     /**
      * @var string the component id for the file manager.
      */
@@ -98,11 +109,11 @@ class ImageManager extends CApplicationComponent
     {
         parent::init();
         $this->attachBehavior('ext', new ComponentBehavior);
-        $this->registerAssets();
-        $this->createPathAlias('imageManager', realpath(__DIR__ . DIRECTORY_SEPARATOR . '..'));
+        $this->createPathAlias('imageManager', realpath(__DIR__ . '/..'));
         $this->import('components.*');
         $this->import('filters.*');
         $this->import('models.*');
+        $this->registerAssets();
         $this->initPresets();
     }
 
@@ -111,7 +122,7 @@ class ImageManager extends CApplicationComponent
      */
     protected function registerAssets()
     {
-        $assetsUrl = $this->publishAssets(__DIR__ . '/../assets');
+        $assetsUrl = $this->publishAssets('assets');
         $this->getClientScript()->registerScriptFile($assetsUrl . '/js/holder.js', CClientScript::POS_END);
     }
 
@@ -146,17 +157,18 @@ class ImageManager extends CApplicationComponent
      * Creates the url for a specific image preset.
      * @param string $name the preset name.
      * @param integer $id the model id.
+     * @param string $holder the placeholder name.
      * @return string the url.
      */
-    public function createPresetUrl($name, $id)
+    public function createPresetUrl($name, $id = null, $holder = null)
     {
         $preset = $this->loadPreset($name);
         if ($id === null) {
-            return $this->createPlaceholderUrl($preset->getWidth(), $preset->getHeight());
-        }
-        if (!$preset->allowCache) {
-            $params = array('id' => $id, 'name' => $name);
-            return $this->resolveCreateImageUrl($params);
+            if ($holder !== null) {
+                return $this->createHolderUrl($holder, $preset);
+            } else {
+                return $this->createClientHolderUrl($preset->getWidth(), $preset->getHeight());
+            }
         } else {
             $model     = $this->loadModel($id);
             $cacheUrl  = $preset->resolveCacheUrl();
@@ -165,10 +177,27 @@ class ImageManager extends CApplicationComponent
         }
     }
 
-
-    protected function createPlaceholderUrl($width, $height)
+    /**
+     * Returns the url for a specific placeholder image preset.
+     * @param string $name the placeholder name.
+     * @param ImagePreset $preset the preset.
+     * @return string the url.
+     */
+    public function createHolderUrl($name, $preset)
     {
-        return 'holder.js/' . $width . 'x' . $height . '/text:' . $this->placeholderText;
+        $cacheUrl = $preset->resolveCacheUrl();
+        return $cacheUrl . '/' . $this->holderDir . '/' . $name . '.png';
+    }
+
+    /**
+     * Returns the holder.js url with the given dimensions.
+     * @param integer $width the image width.
+     * @param integer $height the image height.
+     * @return string the url.
+     */
+    protected function createClientHolderUrl($width, $height)
+    {
+        return 'holder.js/' . $width . 'x' . $height . '/text:' . $this->clientHolderText;
     }
 
     /**
@@ -184,16 +213,49 @@ class ImageManager extends CApplicationComponent
         $model     = $this->loadModel($id);
         $file      = $model->getFile();
         $rawPath   = $file->resolvePath();
-        $image     = $this->openImage($rawPath);
-        $image     = $preset->applyFilters($image);
+        $image     = $this->openImageWithPreset($rawPath, $preset);
         $filePath  = $this->normalizePath($file->getPath());
-        $cachePath = $preset->resolveCachePath() . $filePath;
-        $this->getFileManager()->createDirectory($cachePath);
-        if (isset($preset->format)) {
-            $format = $preset->format;
+        $filename  = $file->resolveFilename($format);
+        return $preset->saveCachedImage($image, $filePath, $filename, array('format' => $format));
+    }
+
+    /**
+     * Creates a preset image for a specific placeholder image.
+     * @param string $name the preset name.
+     * @param string $holder the placeholder name.
+     * @return ImagineInterface the image.
+     */
+    public function createPresetHolder($name, $holder)
+    {
+        $preset    = $this->loadPreset($name);
+        $path      = $this->resolveHolderImagePath($holder);
+        $image     = $this->openImageWithPreset($path, $preset);
+        $filename  = $this->resolveHolderFilename($holder);
+        return $preset->saveCachedImage($image, $this->holderDir, $filename);
+    }
+
+    /**
+     * Returns the path to a specific placeholder image.
+     * @param string $name the placeholder name.
+     * @return string the path.
+     * @throws CException if the placeholder is not defined.
+     */
+    protected function resolveHolderImagePath($name)
+    {
+        if (!isset($this->holders[$name])) {
+            throw new CException(sprintf('Failed to resolve holder image path. Holder "%s" is not defined.', $name));
         }
-        $cachePath .= $file->resolveFilename($format);
-        return $image->save($cachePath, array('format' => $format));
+        return $this->resolveHolderPath(true) . '/' . $this->holders[$name];
+    }
+
+    /**
+     * Returns the filename for the given placeholder.
+     * @param string $name the placeholder name.
+     * @return string the file name.
+     */
+    protected function resolveHolderFilename($name)
+    {
+        return $name . '.png';
     }
 
     /**
@@ -218,7 +280,7 @@ class ImageManager extends CApplicationComponent
      */
     public function normalizePath($path)
     {
-        return str_replace($this->resolveRawPath(false), '', $path);
+        return str_replace($this->resolveRawPath(), '', $path);
     }
 
     /**
@@ -235,7 +297,7 @@ class ImageManager extends CApplicationComponent
         $model = new $this->modelClass();
         $model->setManager($this);
         $fileManager   = $this->getFileManager();
-        $path          = $this->resolveRawPath() . $path;
+        $path          = $this->resolveRawPath() . '/' . $path;
         $file          = $fileManager->saveModel($file, $name, $path);
         $savePath      = $file->resolvePath();
         $image         = $this->openImage($savePath);
@@ -244,7 +306,7 @@ class ImageManager extends CApplicationComponent
         $model->width  = $size->getWidth();
         $model->height = $size->getHeight();
         if (!$model->save()) {
-            throw new CException('Failed to save image model. Database record could not be saved.');
+            throw new CException('Failed to save image model. Record could not be saved.');
         }
         return $model;
     }
@@ -288,13 +350,47 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
-     * Returns the url for creating an image preset.
+     * Opens an image and applies to filters in the given preset.
+     * @param string $path the image path.
+     * @param ImagePreset $preset the preset name.
+     * @return ImageInterface the image.
+     */
+    public function openImageWithPreset($path, $preset)
+    {
+        $image = $this->openImage($path);
+        return $preset->applyFilters($image);
+    }
+
+    /**
+     * Returns the url for creating an image placeholder preset.
      * @param array $params additional GET parameters.
      * @return string the url.
      */
-    public function resolveCreateImageUrl($params = array())
+    public function resolveCreateHolderUrl($params = array())
     {
-        return Yii::app()->createUrl($this->presetRoute, $params);
+        return Yii::app()->createUrl($this->holderRoute, $params);
+    }
+
+    /**
+     * Returns the path for a specific directory.
+     * @param string $name the directory name.
+     * @param boolean $absolute whether the path should be absolute.
+     * @return string the path.
+     */
+    public function resolveDirectoryPath($name, $absolute = false)
+    {
+        return $this->getBasePath($absolute) . '/' . $name;
+    }
+
+    /**
+     * Returns the url for a specific directory.
+     * @param string $name the directory name.
+     * @param boolean $absolute whether the url should be absolute.
+     * @return string the url.
+     */
+    public function resolveDirectoryUrl($name, $absolute = false)
+    {
+        return $this->getBaseUrl($absolute) . '/' . $name;
     }
 
     /**
@@ -304,13 +400,7 @@ class ImageManager extends CApplicationComponent
      */
     public function resolveRawPath($absolute = false)
     {
-        $path = array();
-        if ($absolute) {
-            $path[] = $this->getFileManager()->getBasePath();
-        }
-        $path[] = $this->imageDir;
-        $path[] = $this->rawDir;
-        return implode('/', $path) . '/';
+        return $this->resolveDirectoryPath($this->rawDir, $absolute);
     }
 
     /**
@@ -320,10 +410,7 @@ class ImageManager extends CApplicationComponent
      */
     public function resolveCachePath($absolute = false)
     {
-        return implode('/', array(
-            $this->getBasePath($absolute),
-            $this->cacheDir,
-        ));
+        return $this->resolveDirectoryPath($this->cacheDir, $absolute);
     }
 
     /**
@@ -333,10 +420,27 @@ class ImageManager extends CApplicationComponent
      */
     public function resolveCacheUrl($absolute = false)
     {
-        return implode('/', array(
-            $this->getBaseUrl($absolute),
-            $this->cacheDir,
-        ));
+        return $this->resolveDirectoryUrl($this->cacheDir, $absolute);
+    }
+
+    /**
+     * Returns the path to the placeholder images.
+     * @param boolean $absolute whether the path should be absolute.
+     * @return string the path.
+     */
+    public function resolveHolderPath($absolute = false)
+    {
+        return $this->resolveDirectoryPath($this->holderDir, $absolute);
+    }
+
+    /**
+     * Returns the url to the placeholder images.
+     * @param boolean $absolute whether the url should be absolute.
+     * @return string the url.
+     */
+    public function resolveHolderUrl($absolute = false)
+    {
+        return $this->resolveDirectoryUrl($this->holderDir, $absolute);
     }
 
     /**
@@ -348,10 +452,10 @@ class ImageManager extends CApplicationComponent
     {
         $path = array();
         if ($absolute) {
-            $path[] = $this->getFileManager()->getBasePath();
+            $path[] = rtrim($this->getFileManager()->getBasePath(), '/');
         }
         $path[] = $this->imageDir;
-        return implode('/', $path) . '/';
+        return implode('/', $path);
     }
 
     /**
@@ -363,7 +467,7 @@ class ImageManager extends CApplicationComponent
     {
         $url = array();
         if ($absolute) {
-            $url[] = $this->getFileManager()->getBaseUrl(true);
+            $url[] = rtrim($this->getFileManager()->getBaseUrl(true), '/');
         }
         $url[] = $this->imageDir;
         return implode('/', $url);
@@ -398,7 +502,7 @@ class ImageManager extends CApplicationComponent
             case self::DRIVER_GMAGICK:
                 return new Imagine\Gmagick\Imagine();
             default:
-                throw new CException('Failed to create factory. Driver not found.');
+                throw new CException(sprintf('Failed to create factory. Driver "%s" not supported.', $driver));
         }
     }
 
@@ -413,7 +517,10 @@ class ImageManager extends CApplicationComponent
             return $this->_fileManager;
         } else {
             if (!Yii::app()->hasComponent($this->fileManagerID)) {
-                throw new CException('Failed to get file manager. Application component could not be found.');
+                throw new CException(sprintf(
+                    'Failed to get the file manager component. Application component "%" does not exist.',
+                    $this->fileManagerID
+                ));
             }
             return $this->_fileManager = Yii::app()->getComponent($this->fileManagerID);
         }

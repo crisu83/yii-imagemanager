@@ -47,22 +47,23 @@ class ImageBehavior extends CActiveRecordBehavior
      * @param string $name the preset name.
      * @param string $alt the alternative text display.
      * @param array $htmlOptions additional HTML attributes.
-     * @param string $placeholder the placeholder image.
+     * @param string $holder the placeholder name.
      * @return string the rendered image.
      */
-    public function renderImagePreset($name, $alt = '', $htmlOptions = array())
+    public function renderImagePreset($name, $alt = '', $htmlOptions = array(), $holder = null)
     {
-        return CHtml::image($this->createImagePresetUrl($name), $alt, $htmlOptions);
+        return CHtml::image($this->createImagePresetUrl($name, $holder), $alt, $htmlOptions);
     }
 
     /**
      * Returns the url to the image for the owner of this behavior.
      * @param string $name the preset name.
+     * @param string $holder the placeholder name.
      * @return string the url.
      */
-    public function createImagePresetUrl($name)
+    public function createImagePresetUrl($name, $holder = null)
     {
-        return $this->getImageManager()->createPresetUrl($name, $this->owner->{$this->idAttribute});
+        return $this->getImageManager()->createPresetUrl($name, $this->owner->{$this->idAttribute}, $holder);
     }
 
     /**

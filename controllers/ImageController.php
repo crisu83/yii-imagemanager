@@ -34,6 +34,20 @@ class ImageController extends CController
     }
 
     /**
+     * Creates a new placeholder image preset.
+     * @param string $name the placeholder name.
+     * @param string $preset the preset name.
+     * @param string $format the image format.
+     */
+    public function actionHolder($name, $preset, $format = Image::FORMAT_PNG)
+    {
+        $image = $this->getImageManager()->createPresetHolder($preset, $name, $format);
+        $image->show($format);
+        Yii::app()->end();
+
+    }
+
+    /**
      * Creates a new image by filtering an existing image.
      * @param integer $id the model id.
      * @param string $format the image format.
@@ -62,7 +76,10 @@ class ImageController extends CController
             return $this->_imageManager;
         } else {
             if (($imageManager = Yii::app()->getComponent($this->componentID)) == null) {
-                throw new CException('Failed to get image manager. Component not found.');
+                throw new CException(sprintf(
+                    'Failed to get the image manager component. Application component "%" does not exist.',
+                    $this->componentID
+                ));
             }
             return $this->_imageManager = $imageManager;
         }

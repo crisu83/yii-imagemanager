@@ -22,10 +22,6 @@ class ImagePreset extends CComponent
      * @var string the image file format.
      */
     public $format;
-    /**
-     * @var boolean whether to allow caching of the preset images.
-     */
-    public $allowCache = true;
 
     /** @var ImagineFilter[] */
     protected $_filters;
@@ -51,7 +47,7 @@ class ImagePreset extends CComponent
             $this->_manager->resolveCachePath($absolute),
             $this->name,
             $this->calculateCacheChecksum(),
-        )) . '/';
+        ));
     }
 
     /**
@@ -65,7 +61,7 @@ class ImagePreset extends CComponent
             $this->_manager->resolveCacheUrl($absolute),
             $this->name,
             $this->calculateCacheChecksum(),
-        )) . '/';
+        ));
     }
 
     /**
@@ -98,6 +94,21 @@ class ImagePreset extends CComponent
             $image = $filter->apply($image);
         }
         return $image;
+    }
+
+    /**
+     * Saves a cached image preset.
+     * @param ImageInterface $image the image.
+     * @param string $path the save path (relative to the preset cache path).
+     * @param string $filename the filename.
+     * @param array $options the options for saving the image.
+     * @return ImageInterface the image.
+     */
+    public function saveCachedImage(ImageInterface $image, $path, $filename, $options = array())
+    {
+        $path = $this->resolveCachePath() . '/' . $path;
+        $this->_manager->getFileManager()->createDirectory($path);
+        return $image->save($path . '/' . $filename, $options);
     }
 
     /**

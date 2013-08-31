@@ -101,6 +101,36 @@ class ImagePreset extends CComponent
     }
 
     /**
+     * Returns the minimum width for this preset.
+     * @return integer the width.
+     */
+    public function getWidth()
+    {
+        $width = 1000;
+        foreach ($this->_filters as $filter) {
+            if (isset($filter->width) && $filter->width > 0 && $filter->width < $width) {
+                $width = $filter->width;
+            }
+        }
+        return $width;
+    }
+
+    /**
+     * Returns the minimum height for this preset.
+     * @return integer the height.
+     */
+    public function getHeight()
+    {
+        $height = 1000;
+        foreach ($this->_filters as $filter) {
+            if (isset($filter->height) && $filter->height > 0 && $filter->height < $height) {
+                $height = $filter->height;
+            }
+        }
+        return $height;
+    }
+
+    /**
      * Sets the image manager application component.
      * @param ImageManager $manager the component.
      */

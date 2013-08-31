@@ -20,8 +20,14 @@ Yii::import('vendor.crisu83.yii-filemanager.models.File');
 /**
  * Application component for managing images.
  *
- * @method createPathAlias($alias, $path) via ComponentBehavior
- * @method import($alias) via ComponentBehavior
+ * Methods accessible through the 'ComponentBehavior' class:
+ * @method createPathAlias($alias, $path)
+ * @method import($alias)
+ * @method string publishAssets($path, $forceCopy = false)
+ * @method void registerCssFile($url, $media = '')
+ * @method void registerScriptFile($url, $position = null)
+ * @method string resolveScriptVersion($filename, $minified = false)
+ * @method CClientScript getClientScript()
  */
 class ImageManager extends CApplicationComponent
 {
@@ -70,6 +76,10 @@ class ImageManager extends CApplicationComponent
      */
     public $modelClass = 'Image';
     /**
+     * @var string the placeholder text.
+     */
+    public $placeholderText = 'No image';
+    /**
      * @var string the component id for the file manager.
      */
     public $fileManagerID = 'fileManager';
@@ -88,11 +98,21 @@ class ImageManager extends CApplicationComponent
     {
         parent::init();
         $this->attachBehavior('ext', new ComponentBehavior);
+        $this->registerAssets();
         $this->createPathAlias('imageManager', realpath(__DIR__ . DIRECTORY_SEPARATOR . '..'));
         $this->import('components.*');
         $this->import('filters.*');
         $this->import('models.*');
         $this->initPresets();
+    }
+
+    /**
+     * Registers the assets.
+     */
+    protected function registerAssets()
+    {
+        $assetsUrl = $this->publishAssets(__DIR__ . '/../assets');
+        $this->getClientScript()->registerScriptFile($assetsUrl . '/js/holder.js', CClientScript::POS_END);
     }
 
     /**
@@ -131,16 +151,24 @@ class ImageManager extends CApplicationComponent
     public function createPresetUrl($name, $id)
     {
         $preset = $this->loadPreset($name);
+        if ($id === null) {
+            return $this->createPlaceholderUrl($preset->getWidth(), $preset->getHeight());
+        }
         if (!$preset->allowCache) {
             $params = array('id' => $id, 'name' => $name);
-            $url = $this->resolveCreateImageUrl($params);
+            return $this->resolveCreateImageUrl($params);
         } else {
             $model     = $this->loadModel($id);
             $cacheUrl  = $preset->resolveCacheUrl();
             $imagePath = $this->normalizePath($model->resolveFilePath());
-            $url = $cacheUrl . $imagePath;
+            return $cacheUrl . $imagePath;
         }
-        return $url;
+    }
+
+
+    protected function createPlaceholderUrl($width, $height)
+    {
+        return 'holder.js/' . $width . 'x' . $height . '/text:' . $this->placeholderText;
     }
 
     /**

@@ -10,8 +10,6 @@
 use Imagine\Image\ImageInterface;
 use Imagine\Image\ImagineInterface;
 
-Yii::import('vendor.crisu83.yii-extension.behaviors.ComponentBehavior');
-
 /**
  * Application component for managing images.
  *
@@ -23,6 +21,8 @@ Yii::import('vendor.crisu83.yii-extension.behaviors.ComponentBehavior');
  * @method void registerScriptFile($url, $position = null)
  * @method string resolveScriptVersion($filename, $minified = false)
  * @method CClientScript getClientScript()
+ * @method void registerDependencies($dependencies)
+ * @method string resolveDependencyPath($name)
  */
 class ImageManager extends CApplicationComponent
 {
@@ -86,9 +86,13 @@ class ImageManager extends CApplicationComponent
      */
     public $modelClass = 'Image';
     /**
-     * @var string the path to the Imagine library.
+     * @var array the dependencies (name => path).
+     * Change these to the correct ones if you are not using Composer.
      */
-    public $imaginePath = 'vendor.imagine.imagine';
+    public $dependencies = array(
+        'yii-extension' => 'vendor.crisu83.yii-extension',
+        'imagine' => 'vendor.imagine.imagine',
+    );
     /**
      * @var string the component id for the file manager.
      */
@@ -107,8 +111,15 @@ class ImageManager extends CApplicationComponent
     public function init()
     {
         parent::init();
-        Yii::setPathOfAlias('Imagine', Yii::getPathOfAlias($this->imaginePath . '.lib.Imagine'));
+        if (!isset($this->dependencies['yii-extension'])) {
+            throw new CException('Dependency "yii-extension" not found in ' . __CLASS__ . '.dependencies.');
+        }
+        $yiiExtensionAlias = $this->dependencies['yii-extension'];
+        Yii::import($yiiExtensionAlias . '.behaviors.ComponentBehavior');
         $this->attachBehavior('ext', new ComponentBehavior);
+        $this->registerDependencies($this->dependencies);
+        $imaginePath = Yii::getPathOfAlias($this->resolveDependencyPath('imagine'));
+        Yii::setPathOfAlias('Imagine', $imaginePath . '/lib/Imagine');
         $this->createPathAlias('imageManager', realpath(__DIR__ . '/..'));
         $this->import('components.*');
         $this->import('filters.*');
@@ -243,7 +254,7 @@ class ImageManager extends CApplicationComponent
     protected function resolveHolderImagePath($name)
     {
         if (!isset($this->holders[$name])) {
-            throw new CException(sprintf('Failed to resolve holder image path. Holder "%s" is not defined.', $name));
+            throw new CException(sprintf('Holder "%s" is not defined.', $name));
         }
         return $this->resolveHolderPath(true) . '/' . $this->holders[$name];
     }
@@ -267,7 +278,7 @@ class ImageManager extends CApplicationComponent
     public function loadPreset($name)
     {
         if (!isset($this->_presets[$name])) {
-            throw new CException(sprintf('Failed to load preset. Preset "%s" is not defined.', $name));
+            throw new CException(sprintf('Preset "%s" is not defined.', $name));
         }
         return $this->_presets[$name];
     }
@@ -292,6 +303,9 @@ class ImageManager extends CApplicationComponent
     {
         /* @var Image $model */
         $model = new $this->modelClass($scenario);
+        if (!$model instanceof Image) {
+            throw new CException('Image model must extend the "Image" class.');
+        }
         $model->setManager($this);
         return $model;
     }
@@ -504,7 +518,7 @@ class ImageManager extends CApplicationComponent
             case self::DRIVER_GMAGICK:
                 return new Imagine\Gmagick\Imagine();
             default:
-                throw new CException(sprintf('Failed to create factory. Driver "%s" not supported.', $driver));
+                throw new CException(sprintf('Driver "%s" not supported.', $driver));
         }
     }
 
@@ -520,7 +534,7 @@ class ImageManager extends CApplicationComponent
         } else {
             if (!Yii::app()->hasComponent($this->fileManagerID)) {
                 throw new CException(sprintf(
-                    'Failed to get the file manager component. Application component "%" does not exist.',
+                    __CLASS__ . '.fileManagerID "%s" is invalid, please make sure that exists.',
                     $this->fileManagerID
                 ));
             }

@@ -284,18 +284,30 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
+     * Creates an image model.
+     * @param string $scenario the scenario name.
+     * @return Image the image model.
+     */
+    public function createModel($scenario = 'insert')
+    {
+        /* @var Image $model */
+        $model = new $this->modelClass($scenario);
+        $model->setManager($this);
+        return $model;
+    }
+
+    /**
      * Saves an image file on the hard drive and in the database.
      * @param CUploadedFile $file the uploaded file instance.
      * @param string $name the file name.
      * @param string $path the file path.
+     * @param string $scenario the scenario name.
      * @return Image the image model.
      * @throws CException if saving the image model is not successful.
      */
-    public function saveModel($file, $name = null, $path = null)
+    public function saveModel($file, $name = null, $path = null, $scenario = 'insert')
     {
-        /* @var Image $model */
-        $model = new $this->modelClass();
-        $model->setManager($this);
+        $model         = $this->createModel($scenario);
         $fileManager   = $this->getFileManager();
         $path          = $this->resolveRawPath() . '/' . $path;
         $file          = $fileManager->saveModel($file, $name, $path);
@@ -306,7 +318,7 @@ class ImageManager extends CApplicationComponent
         $model->width  = $size->getWidth();
         $model->height = $size->getHeight();
         if (!$model->save()) {
-            throw new CException('Failed to save image model. Record could not be saved.');
+            throw new CException('Failed to save image record.');
         }
         return $model;
     }
@@ -322,7 +334,7 @@ class ImageManager extends CApplicationComponent
         /* @var Image $model */
         $model = CActiveRecord::model($this->modelClass)->findByPk($id);
         if ($model === null) {
-            throw new CException('Failed to load image model. Record not found.');
+            throw new CException('Failed to locate image record.');
         }
         $model->setManager($this);
         return $model;
@@ -359,16 +371,6 @@ class ImageManager extends CApplicationComponent
     {
         $image = $this->openImage($path);
         return $preset->applyFilters($image);
-    }
-
-    /**
-     * Returns the url for creating an image placeholder preset.
-     * @param array $params additional GET parameters.
-     * @return string the url.
-     */
-    public function resolveCreateHolderUrl($params = array())
-    {
-        return Yii::app()->createUrl($this->holderRoute, $params);
     }
 
     /**

@@ -31,13 +31,14 @@ That way Composer will take care of installing its dependancies, the yii-fileman
 Alternatively you can download the extension and it's dependencies manually.
 Just make sure that all the libraries are registered with the autoloader.
 
-Add the following row your composer.json file:
+Add the following rows your composer.json file:
 
 ```js
 "require": {
   .....
-  "crisu83/yii-imagemanager": ">=1.1.0"
-}
+  "crisu83/yii-imagemanager": "dev-master"
+},
+"minimum-stability": "dev",
 ```
 
 Run the following command in the root directory of your project:
@@ -75,6 +76,7 @@ The following configuration parameters are available for the image manager:
 * **holderDir'** the name of the directory with placeholder images
 * **clientHolderText** the text used with client-side placeholders
 * **modelClass** the name of the image model class
+* **dependencies** the map over dependency paths (name => path)
 * **filterManagerID** the component ID for the file manager component
 
 Add the image command to your console application configuration:

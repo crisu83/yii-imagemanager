@@ -115,11 +115,11 @@ class ImageManager extends CApplicationComponent
             throw new CException('Dependency "yii-extension" not found in ' . __CLASS__ . '.dependencies.');
         }
         $yiiExtensionAlias = $this->dependencies['yii-extension'];
-        Yii::import($yiiExtensionAlias . '.behaviors.ComponentBehavior');
+        Yii::import($yiiExtensionAlias . '.behaviors.*');
         $this->attachBehavior('ext', new ComponentBehavior);
         $this->registerDependencies($this->dependencies);
         $imaginePath = Yii::getPathOfAlias($this->resolveDependencyPath('imagine'));
-        Yii::setPathOfAlias('Imagine', $imaginePath . '/lib/Imagine');
+        $this->createPathAlias('Imagine', $imaginePath . '/lib/Imagine');
         $this->createPathAlias('imageManager', realpath(__DIR__ . '/..'));
         $this->import('components.*');
         $this->import('filters.*');

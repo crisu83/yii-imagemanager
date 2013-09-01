@@ -454,7 +454,7 @@ class ImageManager extends CApplicationComponent
     {
         $path = array();
         if ($absolute) {
-            $path[] = rtrim($this->getFileManager()->getBasePath(), '/');
+            $path[] = $this->getFileManager()->getBasePath();
         }
         $path[] = $this->imageDir;
         return implode('/', $path);
@@ -469,7 +469,7 @@ class ImageManager extends CApplicationComponent
     {
         $url = array();
         if ($absolute) {
-            $url[] = rtrim($this->getFileManager()->getBaseUrl(true), '/');
+            $url[] = $this->getFileManager()->getBaseUrl(true);
         }
         $url[] = $this->imageDir;
         return implode('/', $url);

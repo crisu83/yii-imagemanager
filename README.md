@@ -61,6 +61,9 @@ Add the image manager application component to your application configuration:
         ),
       ),
     ),
+    'holders' => array(
+      'default' => 'placeholder.png',
+    ),
   ),
 ),
 ```
@@ -73,7 +76,7 @@ The following configuration parameters are available for the image manager:
 * **imageDir** the name of the images directory
 * **rawDir** the name of the directory with the unmodified images
 * **cacheDir** the name of the direcotry with the cached images
-* **holderDir'** the name of the directory with placeholder images
+* **holderDir** the name of the directory with placeholder images
 * **clientHolderText** the text used with client-side placeholders
 * **modelClass** the name of the image model class
 * **dependencies** the map over dependency paths (name => path)

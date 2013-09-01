@@ -10,12 +10,7 @@
 use Imagine\Image\ImageInterface;
 use Imagine\Image\ImagineInterface;
 
-// Let Yii's autoloader know where to find the Imagine classes.
-Yii::setPathOfAlias('Imagine', Yii::getPathOfAlias('vendor.imagine.imagine.lib.Imagine'));
-
-// Import some dependencies.
 Yii::import('vendor.crisu83.yii-extension.behaviors.ComponentBehavior');
-Yii::import('vendor.crisu83.yii-filemanager.models.File');
 
 /**
  * Application component for managing images.
@@ -91,6 +86,10 @@ class ImageManager extends CApplicationComponent
      */
     public $modelClass = 'Image';
     /**
+     * @var string the path to the Imagine library.
+     */
+    public $imaginePath = 'vendor.imagine.imagine';
+    /**
      * @var string the component id for the file manager.
      */
     public $fileManagerID = 'fileManager';
@@ -108,6 +107,7 @@ class ImageManager extends CApplicationComponent
     public function init()
     {
         parent::init();
+        Yii::setPathOfAlias('Imagine', Yii::getPathOfAlias($this->imaginePath . '.lib.Imagine'));
         $this->attachBehavior('ext', new ComponentBehavior);
         $this->createPathAlias('imageManager', realpath(__DIR__ . '/..'));
         $this->import('components.*');

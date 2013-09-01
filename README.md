@@ -10,12 +10,13 @@ The goal was not to provide an user interface for image management but to wrap t
 Yii's conventions. Imagine is one of the best image manipulation libraries for PHP and comes with a wide range
 of different image filters and supports all the major graphics libraries. 
 
-This extension is an addition to my yii-filemanager extension.
+This extension is an extension to my [yii-filemanager](https://github.com/Crisu83/yii-filemanager) extension.
 
 ## Features
 
 * A wide range of image filters such as crop, resize and thumbnail
 * Image presets with support for caching of generated images
+* Support for both server and client -side (through [holder.js](http://imsky.github.io/holder/)) placeholders
 * Storing of uploaded images in the database
 * Supports multiple graphics libraries including GD, Imagick and Gmagick
 * Application component that provides centralized access
@@ -33,14 +34,14 @@ Add the following row your composer.json file:
 ```js
 "require": {
   .....
-  "crisu83/yii-imagemanager": "dev-master"
+  "crisu83/yii-imagemanager": ">=1.1.0"
 }
 ```
 
 Run the following command in the root directory of your project:
 
 ```bash
-php composer.phar update
+php composer.phar install
 ```
 
 Add the image manager application component to your application configuration:
@@ -52,7 +53,6 @@ Add the image manager application component to your application configuration:
     'class' => 'vendor.crisu83.yii-imagemanager.components.ImageManager',
     'presets' => array(
       'myPreset' => array(
-        'allowCache' => true,
         'filters' => array(
           array('thumbnail', 'width' => 160, 'height' => 90, 'mode' => 'outbound'),
         ),
@@ -65,14 +65,17 @@ Add the image manager application component to your application configuration:
 The following configuration parameters are available for the image manager:
 
 * **driver** the image driver to use, valid drivers are ```gd```, ```imagick``` and ```gmagick```
-* **presets** the preset filter configurations
+* **presets** the preset filter configurations (name => config)
+* **holders** the placeholder image configurations (name => filename)
 * **imageDir** the name of the images directory
 * **rawDir** the name of the directory with the unmodified images
 * **cacheDir** the name of the direcotry with the cached images
+* **holderDir'** the name of the directory with placeholder images
+* **clientHolderText** the text used with client-side placeholders
 * **modelClass** the name of the image model class
 * **filterManagerID** the component ID for the file manager component
 
-Add the image console command to your application configuration:
+Add the image command to your console application configuration:
 
 ```php
 'commandMap' => array(
@@ -82,20 +85,6 @@ Add the image console command to your application configuration:
   ),
 ),
 ```
-
-## What's included?
-
-* **ImageBehavior** behavior that ease saving, rendering and deleting of images associated with active records
-* **ImageCommand** console command for running shell tasks
-* **ImageManager** application component that provides centralized access
-* **ImagePreset** component that defines a single image preset
-* **ImageController** controller for running actions via an URL
-* **ImagineFilter** the base class for all the image filters
-* **Image** model class for the image table
-
-## Advanced use
-
-### Setting up automatic generation of missing images
 
 Run the following command through yiic:
 
@@ -107,3 +96,13 @@ The following arguments are available for the createAccessFile action:
 
 * **baseUrl** the rewrite base url to use
 * **path** the full path to the access file to create
+
+## What's included?
+
+* **ImageBehavior** behavior that ease saving, rendering and deleting of images associated with active records
+* **ImageCommand** console command for running shell tasks
+* **ImageManager** application component that provides centralized access
+* **ImagePreset** component that defines a single image preset
+* **ImageController** controller for running actions via an URL
+* **ImagineFilter** the base class for all the image filters
+* **Image** model class for the image table

@@ -10,8 +10,8 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "crisu83/yii-extension": ">=1.1.0",
-        "crisu83/yii-filemanager": ">=1.1.2",
+        "crisu83/yii-extension": ">=1.1.1",
+        "crisu83/yii-filemanager": ">=1.1.5",
         "imagine/imagine": "0.6.*@dev"
     }
 }

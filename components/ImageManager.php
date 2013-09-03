@@ -133,7 +133,10 @@ class ImageManager extends CApplicationComponent
     protected function registerAssets()
     {
         $assetsUrl = $this->publishAssets('assets');
-        $this->getClientScript()->registerScriptFile($assetsUrl . '/js/holder.js', CClientScript::POS_END);
+        $cs = $this->getClientScript();
+        if ($cs !== false) {
+            $cs->registerScriptFile($assetsUrl . '/js/holder.js', CClientScript::POS_END);
+        }
     }
 
     /**

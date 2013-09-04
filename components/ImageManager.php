@@ -470,7 +470,7 @@ class ImageManager extends CApplicationComponent
     {
         $path = array();
         if ($absolute) {
-            $path[] = $this->getFileManager()->getBasePath();
+            $path[] = $this->getFileManager()->getBasePath(true);
         }
         $path[] = $this->imageDir;
         return implode('/', $path);

@@ -113,3 +113,66 @@ The following arguments are available for the createAccessFile action:
 * **ImageController** controller for running actions via an URL
 * **ImagineFilter** the base class for all the image filters
 * **Image** model class for the image table
+
+## Getting started
+
+Once your have configured everything you are ready to start using the image manager. Below I will try to explain the most basic features and how to use them.
+
+### Attaching the **ImageBehavior** to your model
+
+Let us assume that you have a model called **Product** for which you want to upload images. In order to do so we need to add an **imageId** column to your user table where we can store the id for the associated image model. To attach the behavior we add the following code to the **Product** class:
+
+```php
+class Product extends CActiveRecord
+{
+  /**
+   * @var CUploadedFile the uploaded file (used when uploading a product image).
+   */
+  public $uploadedFile;
+  
+  /**
+   * @return array the behavior configurations (behavior name=>behavior config).
+   */
+  public function behaviors()
+  {
+    return array(
+      'image' => array(
+        'class' => 'vendor.crisu83.yii-imagemanager.behaviors.ImageBehavior',
+      ),
+    );
+  }
+  
+  /**
+   * @return array relational rules.
+   */
+  public function relations()
+  {
+    return array(
+      'image' => array(self::BELONGS_TO, 'Image', 'imageId'),
+    );
+  }
+  
+  /**
+   * @return array validation rules for model attributes.
+   */
+  public function rules()
+  {
+    return array(
+      ......
+      array('uploadedFile', 'file'), // configure the validator if necessary
+    );
+  }
+  
+  /**
+   * @return array customized attribute labels (name=>label).
+   */
+  public function attributeLabels()
+  {
+    return array(
+      'uploadedFile' => t('content', 'Image'),
+    );
+  }
+  
+  .....
+}
+```

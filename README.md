@@ -228,3 +228,24 @@ class ProductController extends Controller
   }
 }
 ```
+
+```php
+<?php
+/* @var ProductController $this */
+/* @var Product $model */
+/* @var CActiveForm $form */
+?>
+<div class="product-controller update-action">
+  <?php $this->beginWidget('CActiveForm', array(
+    'htmlOptions' => array('enctype' => 'multipart/form-data'), // don't forget this!
+  )); ?>
+  
+    .....
+  
+    <?php echo $form->fileField($model, 'uploadedFile'); ?>
+    
+    .....
+  
+  <?php $this->endWidget(); ?>
+</div>
+``` 

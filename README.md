@@ -118,7 +118,27 @@ The following arguments are available for the createAccessFile action:
 
 Once your have configured everything you are ready to start using the image manager. Below I will try to explain the most basic features and how to use them.
 
-### Attaching the image behavior to your model
+### Configure presets and placeholders
+
+We need to add a few more things to your application configuration before we can begin. In this example we will add a preset and a placeholder image to the image manager. Add the following lines to your application configuration:
+
+```php
+  'imageManager' => array(
+    .....
+    'presets' => array(
+      'product' => array(
+        'filters' => array(
+          array('thumbnail', 'width' => 220, 'height' => 220, 'mode' => 'outbound'),
+        ),
+      ),
+    ),
+    'holders' => array(
+      'default' => 'placeholder.png', // you need to add an image named placeholder.png in the images/holder directory for this
+    ),
+  ),
+```
+
+### Attach the image behavior to your model
 
 Let us assume that you have a model called **Product** for which you want to upload images. In order to do so we need to add an **imageId** column to your user table where we can store the id for the associated image model. To attach the behavior we add the following code to the **Product** class:
 
@@ -185,6 +205,8 @@ class Product extends CActiveRecord
 }
 ```
 
+### Uploading and saving the image
+
 Alright, now we can save images through the **Product** model. Next we will add an action that renders a view that contains a form with a file input. When the form is submitted the uploaded image should be saved in the database. Here is the code for both the action and the view:
 
 ```php
@@ -204,7 +226,7 @@ class ProductController extends Controller
       if ($model->validate()) {
         $model->save(false); // already validated
         if ($model->uploadedFile !== null) {
-          $model->saveImage($model->uploadedFile);
+          $model->saveImage($model->uploadedFile, $model->name, 'products');
         }
         $this->redirect(array('admin'));
       }
@@ -242,10 +264,20 @@ class ProductController extends Controller
   
     .....
   
+    <?php echo $form->labelEx($model, 'uploadedFile'); ?>
     <?php echo $form->fileField($model, 'uploadedFile'); ?>
+    <?php echo $form->error($model, 'uploadedFile'); ?>
     
-    .....
+    <div class="product-image">
+      <?php echo $model->renderImagePreset('product', $model->name, array(), 'default'); ?>
+    </div>
+    
+    <?php echo CHtml::submitButton(); ?>
   
   <?php $this->endWidget(); ?>
 </div>
 ``` 
+
+### There's more
+
+This is just scratching the surface of what you can do with this extension, there are a lot of filters to explore and you can also work with the image manager API directly without the image behavior if you desire. The best way to learn to use this extension is to read through its code, especially the **ImageManager** application component. Good luck!

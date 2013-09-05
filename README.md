@@ -118,11 +118,19 @@ The following arguments are available for the createAccessFile action:
 
 Once your have configured everything you are ready to start using the image manager. Below I will try to explain the most basic features and how to use them.
 
-### Attaching the **ImageBehavior** to your model
+### Attaching the image behavior to your model
 
 Let us assume that you have a model called **Product** for which you want to upload images. In order to do so we need to add an **imageId** column to your user table where we can store the id for the associated image model. To attach the behavior we add the following code to the **Product** class:
 
 ```php
+/**
+ * .....
+ * Methods accessible through the 'ImageBehavior' class:
+ * @method Image saveImage($file, $name = null, $path = null)
+ * @method string renderImagePreset($name, $alt = '', $htmlOptions = array(), $holder = null)
+ * @method string createImagePresetUrl($name, $holder = null)
+ * @method boolean deleteImage()
+ */
 class Product extends CActiveRecord
 {
   /**
@@ -174,5 +182,49 @@ class Product extends CActiveRecord
   }
   
   .....
+}
+```
+
+Alright, now we can save images through the **Product** model. Next we will add an action that renders a view that contains a form with a file input. When the form is submitted the uploaded image should be saved in the database. Here is the code for both the action and the view:
+
+```php
+class ProductController extends Controller
+{
+  .....
+
+  /**
+   * Displays the page for editing the details for a specific product.
+   */
+  public function actionUpdate($id)
+  {
+    $model = $this->loadModel($id);
+    if (isset($_POST['Product']) {
+      $model->attributes = $_POST['Product'];
+      $model->uploadedFile = CUploadedFile::getInstance($model, 'uploadedFile');
+      if ($model->validate()) {
+        $model->save(false); // already validated
+        if ($model->uploadedFile !== null) {
+          $model->saveImage($model->uploadedFile);
+        }
+        $this->redirect(array('admin'));
+      }
+    }
+    $this->render('update', array('model' => $model);
+  }
+  
+  /**
+   * Loads the product model with the given id.
+   * @param int $id the model id.
+   * @return Product the model.
+   * @throws CHttpException if the model is not found.
+   */
+  public function loadModel($id)
+  {
+    $model = Product::model()->findByPk($id);
+    if ($model === null) {
+      throw new CHttpException(404, 'Page not found');
+    }
+    return $model;
+  }
 }
 ```

@@ -1,1 +1,9 @@
+# phpstorm files
+.idea/*
+
+# composer
+composer.phar
+vendor/*
+
+# release packages
 releases/*

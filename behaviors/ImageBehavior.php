@@ -9,6 +9,8 @@
 
 /**
  * Active record behavior for saving, loading, rendering and deleting associated image models.
+ *
+ * @property CActiveRecord $owner
  */
 class ImageBehavior extends CActiveRecordBehavior
 {
@@ -25,6 +27,16 @@ class ImageBehavior extends CActiveRecordBehavior
     private $_imageManager;
 
     /**
+     * Loads the image associated with the owner of this behavior.
+     * @param int $id the model id.
+     * @return Image the model.
+     */
+    public function loadImage()
+    {
+    	return $this->getImageManager()->loadModel($this->resolveImageId());
+    }
+
+    /**
      * Saves the image for the owner of this behavior.
      * @param string $name the image name.
      * @param string $path the path for saving the image.
@@ -34,11 +46,7 @@ class ImageBehavior extends CActiveRecordBehavior
     public function saveImage($file, $name = null, $path = null)
     {
         $model = $this->getImageManager()->saveModel($file, $name, $path);
-        if ($model === null) {
-            return null;
-        }
-        $this->owner->{$this->idAttribute} = $model->id;
-        $this->owner->save(true, array($this->idAttribute));
+        $this->saveImageId($model->id);
         return $model;
     }
 
@@ -68,15 +76,40 @@ class ImageBehavior extends CActiveRecordBehavior
 
     /**
      * Deletes the image for the owner of this behavior.
-     * @return boolean whether the image was deleted.
+     * @throws CException if the image model cannot be deleted.
      */
     public function deleteImage()
     {
-        if ($this->getImageManager()->deleteModel($this->owner{$this->idAttribute})) {
-            $this->owner->{$this->idAttribute} = null;
-            return $this->owner->save(true, array($this->idAttribute));
+        if (!$this->getImageManager()->deleteModel($this->resolveImageId())) {
+            throw new CException('Failed to delete image.');
         }
-        return false;
+        $this->saveImageId(null);
+    }
+
+    /**
+     * Saves the model id for the associated image on the owner of this behavior.
+     * @param int $imageId the image id.
+     * @throws CException if the owner cannot be saved.
+     */
+    protected function saveImageId($imageId)
+    {
+        $this->owner->{$this->idAttribute} = $imageId;
+        if (!$this->owner->save(true, array($this->idAttribute))) {
+            throw new CException('Failed to save image id.');
+        }
+    }
+
+    /**
+     * Returns the model id for the image associated with the owner of this behavior.
+     * @return int the model id.
+     * @throws CException if the owner is not associated with an image.
+     */
+    protected function resolveImageId()
+    {
+        if (($imageId = $this->owner->{$this->idAttribute}) !== null) {
+            return $imageId;
+        }
+        throw new CException('Owner is not associated with an image.');
     }
 
     /**

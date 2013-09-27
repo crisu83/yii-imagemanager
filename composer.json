@@ -8,10 +8,13 @@
             "email": "ChristofferNiska@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
         "crisu83/yii-extension": ">=1.1.1",
-        "crisu83/yii-filemanager": ">=1.1.5",
+        "crisu83/yii-filemanager": ">=1.2.4",
         "imagine/imagine": "0.6.*@dev"
-    }
+    },
+    "require-dev": {
+        "yiisoft/yii": ">=1.1.14"
+    },
+    "minimum-stability": "dev"
 }

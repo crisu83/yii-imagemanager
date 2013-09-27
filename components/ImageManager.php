@@ -288,7 +288,6 @@ class ImageManager extends CApplicationComponent
     /**
      * Normalizes the given path by removing the raw path.
      * @param string $path the path to normalize.
-     * @param string $glue the directory separator.
      * @return string the path.
      */
     public function normalizePath($path)
@@ -300,6 +299,7 @@ class ImageManager extends CApplicationComponent
      * Creates an image model.
      * @param string $scenario the scenario name.
      * @return Image the image model.
+     * @throws CException if the model class does not extend the "Image" class.
      */
     public function createModel($scenario = 'insert')
     {

@@ -5,5 +5,6 @@
 composer.phar
 vendor/*
 
-# release packages
-releases/*
+# codeception
+tests/_log/*
+codecept.phar

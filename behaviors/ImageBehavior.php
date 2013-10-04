@@ -60,7 +60,9 @@ class ImageBehavior extends CActiveRecordBehavior
      */
     public function renderImagePreset($name, $alt = '', $htmlOptions = array(), $holder = null)
     {
-        return CHtml::image($this->createImagePresetUrl($name, $holder), $alt, $htmlOptions);
+        $htmlOptions = array_merge($htmlOptions, $this->createImagePresetOptions($name, $holder));
+        $src = isset($htmlOptions['src']) ? $htmlOptions['src'] : '';
+        return CHtml::image($src, $alt, $htmlOptions);
     }
 
     /**
@@ -69,9 +71,9 @@ class ImageBehavior extends CActiveRecordBehavior
      * @param string $holder the placeholder name.
      * @return string the url.
      */
-    public function createImagePresetUrl($name, $holder = null)
+    public function createImagePresetOptions($name, $holder = null)
     {
-        return $this->getImageManager()->createPresetUrl($name, $this->owner->{$this->idAttribute}, $holder);
+        return $this->getImageManager()->createPresetOptions($name, $this->owner->{$this->idAttribute}, $holder);
     }
 
     /**

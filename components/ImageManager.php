@@ -173,37 +173,48 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
-     * Creates the url for a specific image preset.
+     * Returns the url to a image preset.
+     * @param integer $id the model id.
+     * @param ImagePreset $preset
+     * @return string the url.
+     */
+    public function createImagePresetUrl($id, $preset)
+    {
+        $model = $this->loadModel($id);
+        return $preset->resolveCacheUrl() . $model->resolveNormalizedPath();
+    }
+
+    /**
+     * Creates the HTML attributes for rendering a specific image preset.
      * @param string $name the preset name.
      * @param integer $id the model id.
      * @param string $holder the placeholder name.
      * @return string the url.
      */
-    public function createPresetUrl($name, $id = null, $holder = null)
+    public function createPresetOptions($name, $id = null, $holder = null)
     {
+        $options = array();
         $preset = $this->loadPreset($name);
-        if ($id === null) {
-            if ($holder !== null) {
-                return $this->createHolderUrl($holder, $preset);
-            } else {
-                return $this->createClientHolderUrl($preset->getWidth(), $preset->getHeight());
-            }
+        if ($id !== null) {
+            $options['src'] = $this->createImagePresetUrl($id, $preset);
         } else {
-            $model     = $this->loadModel($id);
-            $cacheUrl  = $preset->resolveCacheUrl();
-            $imagePath = $model->resolveNormalizedPath();
-            return $cacheUrl . $imagePath;
+            if ($holder === null && $this->enableClientHolder) {
+                $options['data-src'] = $this->createClientHolderUrl($preset->getWidth(), $preset->getHeight());
+            } else {
+                $options['src'] = $this->createHolderUrl($holder, $preset);
+            }
         }
+        return $options;
     }
 
     /**
      * Returns the url for a specific placeholder image preset.
      * @param string $name the placeholder name.
      * @param ImagePreset $preset the preset.
-     * @param boolean $absolute whether the url should be absolute (defaults to false).
+     * @param boolean $absolute whether the url should be absolute (defaults to true).
      * @return string the url.
      */
-    public function createHolderUrl($name, $preset, $absolute = false)
+    public function createHolderUrl($name, $preset, $absolute = true)
     {
         return $preset->resolveCacheUrl($absolute) . '/' . $this->holderDir . '/' . $name . '.png';
     }
@@ -232,7 +243,8 @@ class ImageManager extends CApplicationComponent
         $file      = $model->getFile();
         $rawPath   = $file->resolvePath();
         $image     = $this->openImageWithPreset($rawPath, $preset);
-        $filePath  = $this->normalizePath($file->getPath());
+        $filePath  = $model->resolveNormalizedPath();
+        $filePath  = substr($filePath, 0, strrpos($filePath, '/'));
         $filename  = $file->resolveFilename($format);
         return $preset->saveCachedImage($image, $filePath, $filename, array('format' => $format));
     }

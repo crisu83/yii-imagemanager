@@ -79,7 +79,7 @@ class Image extends CActiveRecord
     }
 
     /**
-     * Returns the full filename for this file.
+     * Returns the full filename for this image.
      * @return string the filename.
      */
     public function resolveFilename()
@@ -88,12 +88,22 @@ class Image extends CActiveRecord
     }
 
     /**
+     * Returns the full path for this image.
+     * @param boolean $absolute whether the path should be absolute (default to false).
+     * @return string the path.
+     */
+    public function resolvePath($absolute = false)
+    {
+        return $this->getFile()->resolvePath($absolute);
+    }
+
+    /**
      * Returns the image file path.
      * @return string the path.
      */
     public function resolveNormalizedPath()
     {
-        return $this->_manager->normalizePath($this->getFile()->resolveInternalPath());
+        return $this->_manager->normalizePath($this->resolvePath());
     }
 
     /**

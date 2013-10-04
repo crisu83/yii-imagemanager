@@ -60,8 +60,11 @@ EOD;
     RewriteEngine on
     RewriteBase {$baseUrl}
 
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+
+    # If the requested file exists; then skip the following two rewrite rules.
+    RewriteRule .* - [S=2]
 
     # Rewrite rule for missing placeholder images.
     RewriteRule {$cacheDir}/([^/]+)/.*/{$holderDir}/(.*)\.(gif|jpg|jpeg|png)$ {$holderRoute}?name=$2&preset=$1&format=$3 [L,R=302,QSA]

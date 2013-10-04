@@ -51,6 +51,11 @@ class ImageManagerTest extends \YiiTest
         // todo: implement
     }
 
+    public function testCreatePresetOptions()
+    {
+        // todo: implement
+    }
+
     public function testCreateHolderUrl()
     {
         // todo: implement
@@ -68,7 +73,8 @@ class ImageManagerTest extends \YiiTest
 
     public function testNormalizePath()
     {
-        // todo: implement
+        $manager = $this->getManager();
+        $this->assertEquals('/path/to/test.png', $manager->normalizePath('files/images/raw/path/to/test.png'));
     }
 
     public function testCreateModel()
@@ -108,27 +114,37 @@ class ImageManagerTest extends \YiiTest
 
     public function testResolveRawPath()
     {
-        // todo: implement
+        $manager = $this->getManager();
+        $this->assertEquals('files/images/raw', $manager->resolveRawPath());
+        $this->assertNotEquals(false, strpos($manager->resolveRawPath(true), '/files/images'));
     }
 
     public function testResolveCachePath()
     {
-        // todo: implement
+        $manager = $this->getManager();
+        $this->assertEquals('files/images/cache', $manager->resolveCachePath());
+        $this->assertNotEquals(false, strpos($manager->resolveCachePath(true), '/files/images/cache'));
     }
 
     public function testResolveCacheUrl()
     {
-        // todo: implement
+        $manager = $this->getManager();
+        $this->assertEquals('files/images/cache', $manager->resolveCacheUrl());
+        $this->assertEquals('test/files/images/cache', $manager->resolveCacheUrl(true));
     }
 
     public function testResolveHolderPath()
     {
-        // todo: implement
+        $manager = $this->getManager();
+        $this->assertEquals('files/images/holder', $manager->resolveHolderPath());
+        $this->assertNotEquals(false, strpos($manager->resolveHolderPath(true), '/files/images/holder'));
     }
 
     public function testResolveHolderUrl()
     {
-        // todo: implement
+        $manager = $this->getManager();
+        $this->assertEquals('files/images/holder', $manager->resolveHolderUrl());
+        $this->assertEquals('test/files/images/holder', $manager->resolveHolderUrl(true));
     }
 
     public function testGetBasePath()

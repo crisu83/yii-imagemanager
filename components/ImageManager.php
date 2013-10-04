@@ -342,7 +342,7 @@ class ImageManager extends CApplicationComponent
     {
         $model         = $this->createModel($scenario);
         $fileManager   = $this->getFileManager();
-        $path          = $this->resolveRawPath() . '/' . $path;
+        $path          = $this->imageDir . '/' . $this->rawDir . '/' . $path;
         $file          = $fileManager->saveModel($file, $name, $path);
         $savePath      = $file->resolvePath();
         $image         = $this->openImage($savePath);

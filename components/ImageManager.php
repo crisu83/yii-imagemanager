@@ -78,6 +78,10 @@ class ImageManager extends CApplicationComponent
      */
     public $holderRoute = 'image/holder';
     /**
+     * @var boolean whether to enable client-side placeholders.
+     */
+    public $enableClientHolder = true;
+    /**
      * @var string the placeholder text for holder.js.
      */
     public $clientHolderText = 'No image';
@@ -118,12 +122,14 @@ class ImageManager extends CApplicationComponent
         $this->attachBehavior('ext', new ComponentBehavior);
         $this->registerDependencies($this->dependencies);
         $imaginePath = $this->resolveDependencyPath('imagine');
-        $this->createPathAlias('Imagine', $imaginePath . '/lib/Imagine');
+        Yii::setPathOfAlias('Imagine', $imaginePath . '/lib/Imagine');
         $this->createPathAlias('imageManager', realpath(__DIR__ . '/..'));
         $this->import('components.*');
         $this->import('filters.*');
         $this->import('models.*');
-        $this->registerAssets();
+        if ($this->enableClientHolder) {
+            $this->registerAssets();
+        }
         $this->initPresets();
     }
 
@@ -185,7 +191,7 @@ class ImageManager extends CApplicationComponent
         } else {
             $model     = $this->loadModel($id);
             $cacheUrl  = $preset->resolveCacheUrl();
-            $imagePath = $this->normalizePath($model->resolveFilePath());
+            $imagePath = $model->resolveNormalizedPath();
             return $cacheUrl . $imagePath;
         }
     }
@@ -194,12 +200,12 @@ class ImageManager extends CApplicationComponent
      * Returns the url for a specific placeholder image preset.
      * @param string $name the placeholder name.
      * @param ImagePreset $preset the preset.
+     * @param boolean $absolute whether the url should be absolute (defaults to false).
      * @return string the url.
      */
-    public function createHolderUrl($name, $preset)
+    public function createHolderUrl($name, $preset, $absolute = false)
     {
-        $cacheUrl = $preset->resolveCacheUrl();
-        return $cacheUrl . '/' . $this->holderDir . '/' . $name . '.png';
+        return $preset->resolveCacheUrl($absolute) . '/' . $this->holderDir . '/' . $name . '.png';
     }
 
     /**
@@ -216,14 +222,13 @@ class ImageManager extends CApplicationComponent
     /**
      * Creates a preset image for the image model with the given id.
      * @param string $name the preset name.
-     * @param integer $id the model id.
+     * @param Image $model the model.
      * @param string $format the image file format.
      * @return ImageInterface the image.
      */
-    public function createPresetImage($name, $id, $format)
+    public function createPresetImage($name, $model, $format)
     {
         $preset    = $this->loadPreset($name);
-        $model     = $this->loadModel($id);
         $file      = $model->getFile();
         $rawPath   = $file->resolvePath();
         $image     = $this->openImageWithPreset($rawPath, $preset);
@@ -236,7 +241,7 @@ class ImageManager extends CApplicationComponent
      * Creates a preset image for a specific placeholder image.
      * @param string $name the preset name.
      * @param string $holder the placeholder name.
-     * @return ImagineInterface the image.
+     * @return ImageInterface the image.
      */
     public function createPresetHolder($name, $holder)
     {
@@ -343,18 +348,41 @@ class ImageManager extends CApplicationComponent
      * Loads an image model.
      * @param integer $id the model id.
      * @return Image the model.
-     * @throws CException if the image model is not found.
      */
     public function loadModel($id)
     {
         /* @var Image $model */
         $model = CActiveRecord::model($this->modelClass)->findByPk($id);
+        return $this->initModel($model);
+    }
+
+    /**
+     * Loads an image model by its file id.
+     * @param integer $fileId the file id.
+     * @return Image the model.
+     */
+    public function loadModelByFileId($fileId)
+    {
+        /* @var Image $model */
+        $model = CActiveRecord::model($this->modelClass)->findByAttributes(array('fileId' => $fileId));
+        return $this->initModel($model);
+    }
+
+    /**
+     * Initializes the given model.
+     * @param Image $model the model.
+     * @return Image the model.
+     * @throws CException if the model is null.
+     */
+    protected function initModel($model)
+    {
         if ($model === null) {
-            throw new CException('Failed to locate image record.');
+            throw new CException('Failed to initialize image record.');
         }
         $model->setManager($this);
         return $model;
     }
+
 
     /**
      * Deletes an image model.
@@ -395,7 +423,7 @@ class ImageManager extends CApplicationComponent
      * @param boolean $absolute whether the path should be absolute.
      * @return string the path.
      */
-    public function resolveDirectoryPath($name, $absolute = false)
+    protected function resolveDirectoryPath($name, $absolute = false)
     {
         return $this->getBasePath($absolute) . '/' . $name;
     }
@@ -406,7 +434,7 @@ class ImageManager extends CApplicationComponent
      * @param boolean $absolute whether the url should be absolute.
      * @return string the url.
      */
-    public function resolveDirectoryUrl($name, $absolute = false)
+    protected function resolveDirectoryUrl($name, $absolute = false)
     {
         return $this->getBaseUrl($absolute) . '/' . $name;
     }
@@ -466,14 +494,9 @@ class ImageManager extends CApplicationComponent
      * @param boolean $absolute whether to return an absolute path.
      * @return string the path.
      */
-    public function getBasePath($absolute = true)
+    public function getBasePath($absolute = false)
     {
-        $path = array();
-        if ($absolute) {
-            $path[] = $this->getFileManager()->getBasePath(true);
-        }
-        $path[] = $this->imageDir;
-        return implode('/', $path);
+        return $this->getFileManager()->getBasePath($absolute) . '/' . $this->imageDir;
     }
 
     /**
@@ -481,14 +504,9 @@ class ImageManager extends CApplicationComponent
      * @param boolean $absolute whether to return an absolute url.
      * @return string the url.
      */
-    public function getBaseUrl($absolute = true)
+    public function getBaseUrl($absolute = false)
     {
-        $url = array();
-        if ($absolute) {
-            $url[] = $this->getFileManager()->getBaseUrl(true);
-        }
-        $url[] = $this->imageDir;
-        return implode('/', $url);
+        return $this->getFileManager()->getBaseUrl($absolute) . '/' . $this->imageDir;
     }
 
     /**

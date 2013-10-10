@@ -33,7 +33,7 @@ class ImageBehavior extends CActiveRecordBehavior
      */
     public function loadImage()
     {
-    	return $this->getImageManager()->loadModel($this->resolveImageId());
+        return $this->getImageManager()->loadModel($this->resolveImageId());
     }
 
     /**
@@ -67,6 +67,18 @@ class ImageBehavior extends CActiveRecordBehavior
 
     /**
      * Returns the url to the image for the owner of this behavior.
+     * @param string $name the preset name.
+     * @return string the url.
+     */
+    public function createImagePresetUrl($name)
+    {
+        $manager = $this->getImageManager();
+        $preset = $manager->loadPreset($name);
+        return $manager->createImagePresetUrl($this->owner->{$this->idAttribute}, $preset);
+    }
+
+    /**
+     * Returns the HTML attributes to the image for the owner of this behavior.
      * @param string $name the preset name.
      * @param string $holder the placeholder name.
      * @return string the url.

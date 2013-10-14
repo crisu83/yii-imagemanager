@@ -223,14 +223,8 @@ class ProductController extends Controller
     $model = $this->loadModel($id);
     if (isset($_POST['Product']) {
       $model->attributes = $_POST['Product'];
-      $model->uploadedFile = CUploadedFile::getInstance($model, 'uploadedFile');
-      if ($model->validate()) {
-        $model->save(false); // already validated
-        if ($model->uploadedFile !== null) {
-          $model->saveImage($model->uploadedFile, $model->name, 'products');
-        }
-        $this->redirect(array('admin'));
-      }
+      $model->saveImage($model->name, 'products');
+      $this->redirect(array('admin'));
     }
     $this->render('update', array('model' => $model);
   }

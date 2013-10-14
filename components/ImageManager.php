@@ -35,6 +35,7 @@ class ImageManager extends CApplicationComponent
      * @var string the image driver to use.
      */
     public $driver = self::DRIVER_GD;
+
     /**
      * @var array the preset filter configurations.
      *
@@ -49,61 +50,75 @@ class ImageManager extends CApplicationComponent
      * ),
      */
     public $presets = array();
+
     /**
      * @var array the placeholder configurations (name => filename).
      */
     public $holders = array();
+
     /**
      * @var string the name of the images directory.
      */
     public $imageDir = 'images';
+
     /**
      * @var string the name of the directory with the unmodified images.
      */
     public $rawDir = 'raw';
+
     /**
      * @var string the name of the directory with the modified or cached images.
      */
     public $cacheDir = 'cache';
+
     /**
      * @var string the name of the directory with the placeholder images.
      */
     public $holderDir = 'holder';
+
     /**
      * @var string the route for creating a preset image (preset must be predefined).
      */
     public $presetRoute = 'image/preset';
+
     /**
      * @var string the route for creating a placeholder image.
      */
     public $holderRoute = 'image/holder';
+
     /**
      * @var boolean whether to enable client-side placeholders.
      */
     public $enableClientHolder = true;
+
     /**
      * @var string the placeholder text for holder.js.
      */
     public $clientHolderText = 'No image';
+
     /**
      * @var string the name of the image model class.
      */
     public $modelClass = 'Image';
-    /**
-     * @var array the dependencies (name => path).
-     * Change these to the correct ones if you are not using Composer.
-     */
-    public $dependencies = array(
-        'yii-extension' => 'vendor.crisu83.yii-extension',
-        'imagine' => 'vendor.imagine.imagine',
-    );
+
     /**
      * @var string the component id for the file manager.
      */
     public $fileManagerID = 'fileManager';
 
-    /** @var FileManager */
-    private $_fileManager;
+    /**
+     * @var string path to the yii-extension library.
+     */
+    public $yiiExtensionAlias = 'vendor.crisu83.yii-extension';
+
+    /**
+     * @var array the dependencies (name => path).
+     * Change these to the correct ones if you are not using Composer.
+     */
+    public $dependencies = array(
+        'imagine' => 'vendor.imagine.imagine',
+    );
+
     /** @var ImagePreset[] */
     private $_presets;
     /** @var ImagineInterface */
@@ -115,10 +130,7 @@ class ImageManager extends CApplicationComponent
     public function init()
     {
         parent::init();
-        if (!isset($this->dependencies['yii-extension'])) {
-            throw new CException('Dependency "yii-extension" not found in ' . __CLASS__ . '.dependencies.');
-        }
-        Yii::import($this->dependencies['yii-extension'] . '.behaviors.*');
+        Yii::import($this->yiiExtensionAlias . '.behaviors.*');
         $this->attachBehavior('ext', new ComponentBehavior);
         $this->registerDependencies($this->dependencies);
         $imaginePath = $this->resolveDependencyPath('imagine');
@@ -167,9 +179,7 @@ class ImageManager extends CApplicationComponent
      */
     public function createPreset($config)
     {
-        $preset = ImagePreset::create($config);
-        $preset->setManager($this);
-        return $preset;
+        return ImagePreset::create($config);
     }
 
     /**
@@ -325,7 +335,6 @@ class ImageManager extends CApplicationComponent
         if (!$model instanceof Image) {
             throw new CException('Image model must extend the "Image" class.');
         }
-        $model->setManager($this);
         return $model;
     }
 
@@ -365,7 +374,10 @@ class ImageManager extends CApplicationComponent
     {
         /* @var Image $model */
         $model = CActiveRecord::model($this->modelClass)->findByPk($id);
-        return $this->initModel($model);
+        if ($model === null) {
+            throw new CException('Failed to load image record.');
+        }
+        return $model;
     }
 
     /**
@@ -377,24 +389,11 @@ class ImageManager extends CApplicationComponent
     {
         /* @var Image $model */
         $model = CActiveRecord::model($this->modelClass)->findByAttributes(array('fileId' => $fileId));
-        return $this->initModel($model);
-    }
-
-    /**
-     * Initializes the given model.
-     * @param Image $model the model.
-     * @return Image the model.
-     * @throws CException if the model is null.
-     */
-    protected function initModel($model)
-    {
         if ($model === null) {
-            throw new CException('Failed to initialize image record.');
+            throw new CException('Failed to load image record.');
         }
-        $model->setManager($this);
         return $model;
     }
-
 
     /**
      * Deletes an image model.
@@ -403,8 +402,7 @@ class ImageManager extends CApplicationComponent
      */
     public function deleteModel($id)
     {
-        $model = $this->loadModel($id);
-        return $model->delete();
+        return $this->loadModel($id)->delete();
     }
 
     /**
@@ -425,8 +423,7 @@ class ImageManager extends CApplicationComponent
      */
     public function openImageWithPreset($path, $preset)
     {
-        $image = $this->openImage($path);
-        return $preset->applyFilters($image);
+        return $preset->applyFilters($this->openImage($path));
     }
 
     /**
@@ -561,16 +558,12 @@ class ImageManager extends CApplicationComponent
      */
     public function getFileManager()
     {
-        if (isset($this->_fileManager)) {
-            return $this->_fileManager;
-        } else {
-            if (!Yii::app()->hasComponent($this->fileManagerID)) {
-                throw new CException(sprintf(
-                    __CLASS__ . '.fileManagerID "%s" is invalid, please make sure that exists.',
-                    $this->fileManagerID
-                ));
-            }
-            return $this->_fileManager = Yii::app()->getComponent($this->fileManagerID);
+        if (!Yii::app()->hasComponent($this->fileManagerID)) {
+            throw new CException(sprintf(
+                __CLASS__ . '.fileManagerID "%s" is invalid, please make sure that exists.',
+                $this->fileManagerID
+            ));
         }
+        return Yii::app()->getComponent($this->fileManagerID);
     }
 }

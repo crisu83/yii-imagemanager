@@ -24,8 +24,10 @@ class Image extends CActiveRecord
     const FORMAT_JPG  = 'jpg';
     const FORMAT_PNG  = 'png';
 
-    /** @var ImageManager */
-    private $_manager;
+    /**
+     * @var string image manage component ID.
+     */
+    public $managerID = 'imageManager';
 
     /**
      * Returns the static model of the specified AR class.
@@ -75,7 +77,7 @@ class Image extends CActiveRecord
      */
     public function openImage()
     {
-        return $this->_manager->openImage($this->file->resolvePath());
+        return $this->getManager()->openImage($this->file->resolvePath());
     }
 
     /**
@@ -103,7 +105,7 @@ class Image extends CActiveRecord
      */
     public function resolveNormalizedPath()
     {
-        return $this->_manager->normalizePath($this->resolvePath());
+        return $this->getManager()->normalizePath($this->resolvePath());
     }
 
     /**
@@ -112,15 +114,15 @@ class Image extends CActiveRecord
      */
     public function getFile()
     {
-        return $this->_manager->getFileManager()->loadModel($this->fileId);
+        return $this->getManager()->getFileManager()->loadModel($this->fileId);
     }
 
     /**
-     * Sets the image manager.
-     * @param ImageManager $manager the component.
+     * Returns the image manager application component.
+     * @return ImageManager component instance.
      */
-    public function setManager($manager)
+    public function getManager()
     {
-        $this->_manager = $manager;
+        return Yii::app()->getComponent($this->managerID);
     }
 }

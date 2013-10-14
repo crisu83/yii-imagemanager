@@ -18,15 +18,19 @@ class ImagePreset extends CComponent
      * @var string the preset name.
      */
     public $name;
+
     /**
      * @var string the image file format.
      */
     public $format;
 
+    /**
+     * @var string image manage component ID.
+     */
+    public $managerID = 'imageManager';
+
     /** @var ImagineFilter[] */
     protected $_filters;
-    /** @var ImageManager */
-    protected $_manager;
 
     /**
      * Initializes the preset.
@@ -44,7 +48,7 @@ class ImagePreset extends CComponent
     public function resolveCachePath($absolute = true)
     {
         return implode('/', array(
-            $this->_manager->resolveCachePath($absolute),
+            $this->getManager()->resolveCachePath($absolute),
             $this->name,
             $this->calculateCacheChecksum(),
         ));
@@ -58,7 +62,7 @@ class ImagePreset extends CComponent
     public function resolveCacheUrl($absolute = true)
     {
         return implode('/', array(
-            $this->_manager->resolveCacheUrl($absolute),
+            $this->getManager()->resolveCacheUrl($absolute),
             $this->name,
             $this->calculateCacheChecksum(),
         ));
@@ -107,7 +111,7 @@ class ImagePreset extends CComponent
     public function saveCachedImage(ImageInterface $image, $path, $filename, $options = array())
     {
         $path = $this->resolveCachePath() . '/' . $path;
-        $this->_manager->getFileManager()->createDirectory($path);
+        $this->getManager()->getFileManager()->createDirectory($path);
         return $image->save($path . '/' . $filename, $options);
     }
 
@@ -142,12 +146,12 @@ class ImagePreset extends CComponent
     }
 
     /**
-     * Sets the image manager application component.
-     * @param ImageManager $manager the component.
+     * Returns the image manager application component.
+     * @return ImageManager component instance.
      */
-    public function setManager($manager)
+    public function getManager()
     {
-        $this->_manager = $manager;
+        return Yii::app()->getComponent($this->managerID);
     }
 
     /**

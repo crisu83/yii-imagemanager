@@ -15,16 +15,19 @@
 class ImageBehavior extends CActiveRecordBehavior
 {
     /**
-     * @var string the application component id for the image manager.
-     */
-    public $componentID = 'imageManager';
-    /**
      * @var string the name of the image id column.
      */
     public $idAttribute = 'imageId';
 
-    /** @var ImageManager */
-    private $_imageManager;
+    /**
+     * @var string name of the model attribute that holds the uploaded file (defaults to 'upload').
+     */
+    public $uploadAttribute = 'upload';
+
+    /**
+     * @var string the application component id for the image manager.
+     */
+    public $componentID = 'imageManager';
 
     /**
      * Loads the image associated with the owner of this behavior.
@@ -40,13 +43,24 @@ class ImageBehavior extends CActiveRecordBehavior
      * Saves the image for the owner of this behavior.
      * @param string $name the image name.
      * @param string $path the path for saving the image.
+     * @param array $saveAttributes attributes that should be passed to the save method.
+     * @param string $scenario name of the scenario.
      * @param CUploadedFile $file the uploaded file.
      * @return Image the model.
      */
-    public function saveImage($file, $name = null, $path = null)
+    public function saveImage($name = null, $path = null, $saveAttributes = array(), $scenario = 'insert')
     {
-        $model = $this->getImageManager()->saveModel($file, $name, $path);
-        $this->saveImageId($model->id);
+        $this->owner->{$this->uploadAttribute} = CUploadedFile::getInstance(
+            $this->owner,
+            $this->uploadAttribute
+        );
+        $model = $this->getImageManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
+        foreach (array($this->idAttribute, $this->uploadAttribute) as $attribute) {
+            if (!in_array($attribute, $saveAttributes)) {
+                $saveAttributes[] = $attribute;
+            }
+        }
+        $this->saveImageId($model->id, $saveAttributes);
         return $model;
     }
 
@@ -73,8 +87,7 @@ class ImageBehavior extends CActiveRecordBehavior
     public function createImagePresetUrl($name)
     {
         $manager = $this->getImageManager();
-        $preset = $manager->loadPreset($name);
-        return $manager->createImagePresetUrl($this->owner->{$this->idAttribute}, $preset);
+        return $manager->createImagePresetUrl($this->owner->{$this->idAttribute}, $manager->loadPreset($name));
     }
 
     /**
@@ -103,12 +116,16 @@ class ImageBehavior extends CActiveRecordBehavior
     /**
      * Saves the model id for the associated image on the owner of this behavior.
      * @param int $imageId the image id.
+     * @param array $saveAttributes attributes that should be passed to the save method.
      * @throws CException if the owner cannot be saved.
      */
-    protected function saveImageId($imageId)
+    protected function saveImageId($imageId, $saveAttributes = array())
     {
+        if (!in_array($this->idAttribute, $saveAttributes)) {
+            $saveAttributes[] = $this->idAttribute;
+        }
         $this->owner->{$this->idAttribute} = $imageId;
-        if (!$this->owner->save(true, array($this->idAttribute))) {
+        if (!$this->owner->save(true, $saveAttributes)) {
             throw new CException('Failed to save image id.');
         }
     }
@@ -132,10 +149,6 @@ class ImageBehavior extends CActiveRecordBehavior
      */
     protected function getImageManager()
     {
-        if (isset($this->_imageManager)) {
-            return $this->_imageManager;
-        } else {
-            return $this->_imageManager = Yii::app()->getComponent($this->componentID);
-        }
+        return Yii::app()->getComponent($this->componentID);
     }
 }

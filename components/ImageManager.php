@@ -333,7 +333,7 @@ class ImageManager extends CApplicationComponent
         /* @var Image $model */
         $model = new $this->modelClass($scenario);
         if (!$model instanceof Image) {
-            throw new CException('Image model must extend the "Image" class.');
+            throw new CException(sprintf('Model class "%s" must extend "Image".', $this->modelClass));
         }
         return $model;
     }
@@ -360,7 +360,7 @@ class ImageManager extends CApplicationComponent
         $model->width  = $size->getWidth();
         $model->height = $size->getHeight();
         if (!$model->save()) {
-            throw new CException('Failed to save image record.');
+            throw new CException('Failed to save the image model.');
         }
         return $model;
     }
@@ -375,7 +375,7 @@ class ImageManager extends CApplicationComponent
         /* @var Image $model */
         $model = CActiveRecord::model($this->modelClass)->findByPk($id);
         if ($model === null) {
-            throw new CException('Failed to load image record.');
+            throw new CException(sprintf('Failed to locale image model with id "%d".', $id));
         }
         return $model;
     }
@@ -390,7 +390,7 @@ class ImageManager extends CApplicationComponent
         /* @var Image $model */
         $model = CActiveRecord::model($this->modelClass)->findByAttributes(array('fileId' => $fileId));
         if ($model === null) {
-            throw new CException('Failed to load image record.');
+            throw new CException(sprintf('Failed to locale image model with file id "%d".', $fileId));
         }
         return $model;
     }

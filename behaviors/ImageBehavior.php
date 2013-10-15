@@ -15,6 +15,16 @@
 class ImageBehavior extends CActiveRecordBehavior
 {
     /**
+     * @var string name to save the image with.
+     */
+    public $name;
+
+    /**
+     * @var string internal path for saving the image.
+     */
+    public $path;
+
+    /**
      * @var string the name of the image id column.
      */
     public $idAttribute = 'imageId';
@@ -25,9 +35,60 @@ class ImageBehavior extends CActiveRecordBehavior
     public $uploadAttribute = 'upload';
 
     /**
+     * @var boolean whether to save the image automatically when saving the owner model.
+     */
+    public $autoSave = true;
+
+    /**
+     * @var boolean whether to delete the image automatically when deleting the owner model.
+     */
+    public $autoDelete = true;
+
+    /**
      * @var string the application component id for the image manager (defaults to 'imageManager').
      */
     public $managerID = 'imageManager';
+
+    /**
+     * Actions to take before validating the owner of this behavior.
+     * @param CModelEvent $event event parameter.
+     */
+    protected function beforeValidate($event)
+    {
+        if ($this->autoSave) {
+            $this->saveImage($this->name, $this->path);
+        }
+    }
+
+    /**
+     * Actions to take before deleting the owner of this behavior.
+     * @param CModelEvent $event event parameter.
+     */
+    protected function beforeDelete($event)
+    {
+        if ($this->autoDelete) {
+            $this->deleteImage();
+        }
+    }
+
+    /**
+     * Saves the image for the owner of this behavior.
+     * @param string $name the image name.
+     * @param string $path the path for saving the image.
+     * @param string $scenario name of the scenario.
+     * @return Image the model.
+     * @throws CException if the image cannot be saved or the image id cannot be save to the owner.
+     */
+    public function saveImage($name = null, $path = null, $scenario = 'insert')
+    {
+        $this->owner->{$this->uploadAttribute} = CUploadedFile::getInstance(
+            $this->owner,
+            $this->uploadAttribute
+        );
+        $model = $this->getManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
+        $this->owner->{$this->idAttribute} = $model->id;
+        return $model;
+    }
 
     /**
      * Loads the image associated with the owner of this behavior.
@@ -36,35 +97,6 @@ class ImageBehavior extends CActiveRecordBehavior
     public function loadImage()
     {
         return $this->getManager()->loadModel($this->owner->{$this->idAttribute});
-    }
-
-    /**
-     * Saves the image for the owner of this behavior.
-     * @param string $name the image name.
-     * @param string $path the path for saving the image.
-     * @param array $saveAttributes attributes that should be passed to the save method.
-     * @param string $scenario name of the scenario.
-     * @return Image the model.
-     * @throws CException if the image cannot be saved or the image id cannot be save to the owner.
-     */
-    public function saveImage($name = null, $path = null, $saveAttributes = array(), $scenario = 'insert')
-    {
-        $this->owner->{$this->uploadAttribute} = CUploadedFile::getInstance(
-            $this->owner,
-            $this->uploadAttribute
-        );
-        if (!in_array($this->uploadAttribute, $saveAttributes)) {
-            $saveAttributes[] = $this->uploadAttribute;
-        }
-        if (!$this->owner->validate($saveAttributes)) {
-            throw new CException('Failed to save image.');
-        }
-        $model = $this->getManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
-        $this->owner->{$this->idAttribute} = $model->id;
-        if (!$this->owner->save(true, array($this->idAttribute))) {
-            throw new CException('Failed to save image id to owner.');
-        }
-        return $model;
     }
 
     /**
@@ -106,13 +138,14 @@ class ImageBehavior extends CActiveRecordBehavior
 
     /**
      * Deletes the image for the owner of this behavior.
-     * @throws CException if the image model cannot be deleted.
+     * @throws CException if the image cannot be deleted or if the image id cannot be removed from the owner model.
      */
     public function deleteImage()
     {
         if (!$this->getManager()->deleteModel($this->owner->{$this->idAttribute})) {
             throw new CException('Failed to delete image.');
         }
+        $this->owner->{$this->idAttribute} = null;
         if (!$this->owner->save(false)) {
             throw new CException('Failed to remove image id from owner.');
         }

@@ -54,13 +54,17 @@ class ImageBehavior extends CActiveRecordBehavior
             $this->owner,
             $this->uploadAttribute
         );
-        $model = $this->getImageManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
-        foreach (array($this->idAttribute, $this->uploadAttribute) as $attribute) {
-            if (!in_array($attribute, $saveAttributes)) {
-                $saveAttributes[] = $attribute;
-            }
+        if (!in_array($this->uploadAttribute, $saveAttributes)) {
+            $saveAttributes[] = $this->uploadAttribute;
         }
-        $this->saveImageId($model->id, $saveAttributes);
+        if (!$this->owner->validate($saveAttributes)) {
+            throw new CException('Failed to save image.');
+        }
+        $model = $this->getImageManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
+        $this->owner->{$this->idAttribute} = $model->id;
+        if (!$this->owner->save(true, array($this->idAttribute))) {
+            throw new CException('Failed to save image id to owner.');
+        }
         return $model;
     }
 
@@ -110,7 +114,9 @@ class ImageBehavior extends CActiveRecordBehavior
         if (!$this->getImageManager()->deleteModel($this->resolveImageId())) {
             throw new CException('Failed to delete image.');
         }
-        $this->saveImageId(null);
+        if (!$this->owner->save(false)) {
+            throw new CException('Failed to remove image id from owner.');
+        }
     }
 
     /**
@@ -126,7 +132,7 @@ class ImageBehavior extends CActiveRecordBehavior
         }
         $this->owner->{$this->idAttribute} = $imageId;
         if (!$this->owner->save(true, $saveAttributes)) {
-            throw new CException('Failed to save image id.');
+            throw new CException('Failed to save image id to owner.');
         }
     }
 

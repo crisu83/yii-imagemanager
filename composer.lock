@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "a327359b12e8e277f7979c530fca74c8",
+    "hash": "8aa655c9946dc6f569a719ae6e6af5ee",
     "packages": [
         {
             "name": "crisu83/yii-extension",
@@ -35,16 +35,16 @@
         },
         {
             "name": "crisu83/yii-filemanager",
-            "version": "1.5.0",
+            "version": "1.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Crisu83/yii-filemanager.git",
-                "reference": "21d1ff07e1bc7cd92d43e0509f8d4637691d3d87"
+                "reference": "d296d6b198e9e52a03868bfd6dd09f37d1d151ca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Crisu83/yii-filemanager/zipball/21d1ff07e1bc7cd92d43e0509f8d4637691d3d87",
-                "reference": "21d1ff07e1bc7cd92d43e0509f8d4637691d3d87",
+                "url": "https://api.github.com/repos/Crisu83/yii-filemanager/zipball/d296d6b198e9e52a03868bfd6dd09f37d1d151ca",
+                "reference": "d296d6b198e9e52a03868bfd6dd09f37d1d151ca",
                 "shasum": ""
             },
             "require": {
@@ -67,7 +67,7 @@
                 }
             ],
             "description": "File manager for the Yii PHP framework.",
-            "time": "2013-10-14 09:58:06"
+            "time": "2013-10-15 21:55:13"
         },
         {
             "name": "imagine/imagine",

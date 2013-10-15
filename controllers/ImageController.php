@@ -36,8 +36,9 @@ class ImageController extends CController
      */
     public function actionPreset($name, $fileId, $format)
     {
-        $image = $this->getImageManager()->loadModelByFileId($fileId);
-        $preset = $this->getImageManager()->createPresetImage($name, $image, $format);
+        $manager = $this->getImageManager();
+        $image = $manager->loadModelByFileId($fileId);
+        $preset = $manager->createPresetImage($name, $image, $format);
         $preset->show($format);
         Yii::app()->end();
     }
@@ -78,20 +79,21 @@ class ImageController extends CController
      * Action for uploading an image using AJAX.
      * @param string $name name for locating the uploaded file.
      * @param string $preset name of the preset.
-     * @param string $imageName image name.
-     * @param string $imagePath image path.
+     * @param string $saveName image name.
+     * @param string $path image path.
      * @throws CException if the uploaded file is not found.
      */
-    public function actionAjaxUpload($name, $preset = null, $imageName = null, $imagePath = null)
+    public function actionAjaxUpload($name, $preset = null, $saveName = null, $path = null)
     {
         $file = CUploadedFile::getInstanceByName($name);
         if ($file === null) {
             throw new CException(sprintf('Uploaded file with name "%s" could not be found.', $name));
         }
         $manager = $this->getImageManager();
-        $model = $manager->saveModel($file, $imageName, $imagePath);
+        $model = $manager->saveModel($file, $saveName, $path);
         $result = array('imageId' => $model->id);
         if ($preset !== null) {
+            $preset = $manager->loadPreset($preset);
             $result['imageUrl'] = $manager->createImagePresetUrl($model->id, $preset);
         }
         echo CJSON::encode(array('success' => true, 'result' => $result));
@@ -110,6 +112,6 @@ class ImageController extends CController
                 $this->managerID
             ));
         }
-        return $this->_imageManager = $imageManager;
+        return $imageManager;
     }
 }

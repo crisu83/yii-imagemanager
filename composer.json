@@ -9,8 +9,8 @@
         }
     ],
     "require": {
-        "crisu83/yii-extension": "1.1.1",
-        "crisu83/yii-filemanager": "1.5.0",
+        "crisu83/yii-extension": "1.1.*",
+        "crisu83/yii-filemanager": "1.5.*",
         "imagine/imagine": "0.6.*@dev"
     },
     "require-dev": {

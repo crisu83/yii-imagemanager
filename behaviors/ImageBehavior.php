@@ -25,18 +25,17 @@ class ImageBehavior extends CActiveRecordBehavior
     public $uploadAttribute = 'upload';
 
     /**
-     * @var string the application component id for the image manager.
+     * @var string the application component id for the image manager (defaults to 'imageManager').
      */
-    public $componentID = 'imageManager';
+    public $managerID = 'imageManager';
 
     /**
      * Loads the image associated with the owner of this behavior.
-     * @param int $id the model id.
      * @return Image the model.
      */
     public function loadImage()
     {
-        return $this->getImageManager()->loadModel($this->resolveImageId());
+        return $this->getManager()->loadModel($this->owner->{$this->idAttribute});
     }
 
     /**
@@ -45,8 +44,8 @@ class ImageBehavior extends CActiveRecordBehavior
      * @param string $path the path for saving the image.
      * @param array $saveAttributes attributes that should be passed to the save method.
      * @param string $scenario name of the scenario.
-     * @param CUploadedFile $file the uploaded file.
      * @return Image the model.
+     * @throws CException if the image cannot be saved or the image id cannot be save to the owner.
      */
     public function saveImage($name = null, $path = null, $saveAttributes = array(), $scenario = 'insert')
     {
@@ -54,13 +53,17 @@ class ImageBehavior extends CActiveRecordBehavior
             $this->owner,
             $this->uploadAttribute
         );
-        $model = $this->getImageManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
-        foreach (array($this->idAttribute, $this->uploadAttribute) as $attribute) {
-            if (!in_array($attribute, $saveAttributes)) {
-                $saveAttributes[] = $attribute;
-            }
+        if (!in_array($this->uploadAttribute, $saveAttributes)) {
+            $saveAttributes[] = $this->uploadAttribute;
         }
-        $this->saveImageId($model->id, $saveAttributes);
+        if (!$this->owner->validate($saveAttributes)) {
+            throw new CException('Failed to save image.');
+        }
+        $model = $this->getManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
+        $this->owner->{$this->idAttribute} = $model->id;
+        if (!$this->owner->save(true, array($this->idAttribute))) {
+            throw new CException('Failed to save image id to owner.');
+        }
         return $model;
     }
 
@@ -86,7 +89,7 @@ class ImageBehavior extends CActiveRecordBehavior
      */
     public function createImagePresetUrl($name)
     {
-        $manager = $this->getImageManager();
+        $manager = $this->getManager();
         return $manager->createImagePresetUrl($this->owner->{$this->idAttribute}, $manager->loadPreset($name));
     }
 
@@ -98,7 +101,7 @@ class ImageBehavior extends CActiveRecordBehavior
      */
     public function createImagePresetOptions($name, $holder = null)
     {
-        return $this->getImageManager()->createPresetOptions($name, $this->owner->{$this->idAttribute}, $holder);
+        return $this->getManager()->createPresetOptions($name, $this->owner->{$this->idAttribute}, $holder);
     }
 
     /**
@@ -107,48 +110,20 @@ class ImageBehavior extends CActiveRecordBehavior
      */
     public function deleteImage()
     {
-        if (!$this->getImageManager()->deleteModel($this->resolveImageId())) {
+        if (!$this->getManager()->deleteModel($this->owner->{$this->idAttribute})) {
             throw new CException('Failed to delete image.');
         }
-        $this->saveImageId(null);
-    }
-
-    /**
-     * Saves the model id for the associated image on the owner of this behavior.
-     * @param int $imageId the image id.
-     * @param array $saveAttributes attributes that should be passed to the save method.
-     * @throws CException if the owner cannot be saved.
-     */
-    protected function saveImageId($imageId, $saveAttributes = array())
-    {
-        if (!in_array($this->idAttribute, $saveAttributes)) {
-            $saveAttributes[] = $this->idAttribute;
+        if (!$this->owner->save(false)) {
+            throw new CException('Failed to remove image id from owner.');
         }
-        $this->owner->{$this->idAttribute} = $imageId;
-        if (!$this->owner->save(true, $saveAttributes)) {
-            throw new CException('Failed to save image id.');
-        }
-    }
-
-    /**
-     * Returns the model id for the image associated with the owner of this behavior.
-     * @return int the model id.
-     * @throws CException if the owner is not associated with an image.
-     */
-    protected function resolveImageId()
-    {
-        if (($imageId = $this->owner->{$this->idAttribute}) !== null) {
-            return $imageId;
-        }
-        throw new CException('Owner is not associated with an image.');
     }
 
     /**
      * Returns the image manager component instance.
      * @return ImageManager the component.
      */
-    protected function getImageManager()
+    protected function getManager()
     {
-        return Yii::app()->getComponent($this->componentID);
+        return Yii::app()->getComponent($this->managerID);
     }
 }

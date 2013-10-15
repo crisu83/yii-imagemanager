@@ -10,3 +10,5 @@ $_SERVER['SCRIPT_FILENAME'] = __FILE__;
 require(__DIR__ . '/../vendor/yiisoft/yii/framework/yii.php');
 require(__DIR__ . '/../vendor/yiisoft/yii/tests/TestApplication.php');
 require(__DIR__ . '/../vendor/crisu83/yii-testingtools/unit/YiiTest.php');
+
+Yii::$enableIncludePath = false;

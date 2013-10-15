@@ -13,12 +13,20 @@
 class ImageController extends CController
 {
     /**
-     * @var string the image manager component id.
+     * @var string image manager component id.
      */
-    public $componentID = 'imageManager';
+    public $managerID = 'imageManager';
 
-    /** @var ImageManager */
-    private $_imageManager;
+    /**
+     * Returns the filter configurations.
+     * @return array a list of filter configurations.
+     */
+    public function filters()
+    {
+        return array(
+            'ajaxUpload + ajaxOnly',
+        );
+    }
 
     /**
      * Creates a new image preset from an existing image.
@@ -67,22 +75,41 @@ class ImageController extends CController
     }
 
     /**
+     * Action for uploading an image using AJAX.
+     * @param string $name name for locating the uploaded file.
+     * @param string $preset name of the preset.
+     * @param string $imageName image name.
+     * @param string $imagePath image path.
+     * @throws CException if the uploaded file is not found.
+     */
+    public function actionAjaxUpload($name, $preset = null, $imageName = null, $imagePath = null)
+    {
+        $file = CUploadedFile::getInstanceByName($name);
+        if ($file === null) {
+            throw new CException(sprintf('Uploaded file with name "%s" could not be found.', $name));
+        }
+        $manager = $this->getImageManager();
+        $model = $manager->saveModel($file, $imageName, $imagePath);
+        $result = array('imageId' => $model->id);
+        if ($preset !== null) {
+            $result['imageUrl'] = $manager->createImagePresetUrl($model->id, $preset);
+        }
+        echo CJSON::encode(array('success' => true, 'result' => $result));
+    }
+
+    /**
      * Returns the image manager component.
      * @return ImageManager the component.
      * @throws CException if the component is not found.
      */
     protected function getImageManager()
     {
-        if ($this->_imageManager !== null) {
-            return $this->_imageManager;
-        } else {
-            if (($imageManager = Yii::app()->getComponent($this->componentID)) == null) {
-                throw new CException(sprintf(
-                    'Failed to get the image manager component. Application component "%" does not exist.',
-                    $this->componentID
-                ));
-            }
-            return $this->_imageManager = $imageManager;
+        if (($imageManager = Yii::app()->getComponent($this->managerID)) == null) {
+            throw new CException(sprintf(
+                'Failed to get the image manager component. Application component "%" does not exist.',
+                $this->managerID
+            ));
         }
+        return $this->_imageManager = $imageManager;
     }
 }

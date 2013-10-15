@@ -1,7 +1,5 @@
 <?php
 
-use Codeception\Util\Stub;
-
 class ImageManagerTest extends \YiiTest
 {
    /**

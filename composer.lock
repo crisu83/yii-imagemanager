@@ -3,11 +3,11 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "8f529100c3fd941e586e5052bb042430",
+    "hash": "a327359b12e8e277f7979c530fca74c8",
     "packages": [
         {
             "name": "crisu83/yii-extension",
-            "version": "dev-master",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Crisu83/yii-extension.git",
@@ -35,16 +35,16 @@
         },
         {
             "name": "crisu83/yii-filemanager",
-            "version": "dev-master",
+            "version": "1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Crisu83/yii-filemanager.git",
-                "reference": "583ff871cf06a89ade549cd5e063fcc9ef131b4a"
+                "reference": "21d1ff07e1bc7cd92d43e0509f8d4637691d3d87"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Crisu83/yii-filemanager/zipball/583ff871cf06a89ade549cd5e063fcc9ef131b4a",
-                "reference": "583ff871cf06a89ade549cd5e063fcc9ef131b4a",
+                "url": "https://api.github.com/repos/Crisu83/yii-filemanager/zipball/21d1ff07e1bc7cd92d43e0509f8d4637691d3d87",
+                "reference": "21d1ff07e1bc7cd92d43e0509f8d4637691d3d87",
                 "shasum": ""
             },
             "require": {
@@ -67,7 +67,7 @@
                 }
             ],
             "description": "File manager for the Yii PHP framework.",
-            "time": "2013-10-14 09:24:24"
+            "time": "2013-10-14 09:58:06"
         },
         {
             "name": "imagine/imagine",
@@ -730,12 +730,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/instaclick/php-webdriver.git",
-                "reference": "47a6019553a7a5b42d35493276ffc2c9252c53d5"
+                "reference": "786ba0dc9c594fb0b9b8171db852b2224b23811e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/instaclick/php-webdriver/zipball/47a6019553a7a5b42d35493276ffc2c9252c53d5",
-                "reference": "47a6019553a7a5b42d35493276ffc2c9252c53d5",
+                "url": "https://api.github.com/repos/instaclick/php-webdriver/zipball/786ba0dc9c594fb0b9b8171db852b2224b23811e",
+                "reference": "786ba0dc9c594fb0b9b8171db852b2224b23811e",
                 "shasum": ""
             },
             "require": {
@@ -780,7 +780,7 @@
                 "webdriver",
                 "webtest"
             ],
-            "time": "2013-10-04 15:03:51"
+            "time": "2013-10-15 14:53:05"
         },
         {
             "name": "monolog/monolog",
@@ -1672,12 +1672,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/yii.git",
-                "reference": "88d02cfcb9af938fa659e25e12eb40a9492d20c3"
+                "reference": "f288852316fa3dc344a2e6954577902cff84fd50"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/yii/zipball/88d02cfcb9af938fa659e25e12eb40a9492d20c3",
-                "reference": "88d02cfcb9af938fa659e25e12eb40a9492d20c3",
+                "url": "https://api.github.com/repos/yiisoft/yii/zipball/f288852316fa3dc344a2e6954577902cff84fd50",
+                "reference": "f288852316fa3dc344a2e6954577902cff84fd50",
                 "shasum": ""
             },
             "require": {
@@ -1748,7 +1748,7 @@
                 "framework",
                 "yii"
             ],
-            "time": "2013-10-12 15:14:13"
+            "time": "2013-10-15 09:47:47"
         }
     ],
     "aliases": [

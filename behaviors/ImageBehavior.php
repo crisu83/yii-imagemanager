@@ -56,7 +56,18 @@ class ImageBehavior extends CActiveRecordBehavior
     protected function beforeValidate($event)
     {
         if ($this->autoSave) {
-            $this->saveImage($this->name, $this->path);
+            $this->owner->{$this->uploadAttribute} = $this->getUploadedImage();
+        }
+    }
+
+    /**
+     * Actions to take before saving the owner of this behavior.
+     * @param CModelEvent $event event parameter.
+     */
+    protected function beforeSave($event)
+    {
+        if ($this->autoSave) {
+            $this->saveImage($this->owner->{$this->uploadAttribute}, $this->name, $this->path);
         }
     }
 
@@ -72,20 +83,25 @@ class ImageBehavior extends CActiveRecordBehavior
     }
 
     /**
+     * Returns the uploaded image file.
+     * @return CUploadedFile the file.
+     */
+    public function getUploadedImage()
+    {
+        return CUploadedFile::getInstance($this->owner, $this->uploadAttribute);
+    }
+
+    /**
      * Saves the image for the owner of this behavior.
+     * @param CUploadedFile $file the uploaded file.
      * @param string $name the image name.
      * @param string $path the path for saving the image.
      * @param string $scenario name of the scenario.
      * @return Image the model.
-     * @throws CException if the image cannot be saved or the image id cannot be save to the owner.
      */
-    public function saveImage($name = null, $path = null, $scenario = 'insert')
+    public function saveImage($file, $name = null, $path = null, $scenario = 'insert')
     {
-        $this->owner->{$this->uploadAttribute} = CUploadedFile::getInstance(
-            $this->owner,
-            $this->uploadAttribute
-        );
-        $model = $this->getManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
+        $model = $this->getManager()->saveModel($file, $name, $path, $scenario);
         $this->owner->{$this->idAttribute} = $model->id;
         return $model;
     }

@@ -85,18 +85,19 @@ class ImageController extends CController
      */
     public function actionAjaxUpload($name, $preset = null, $saveName = null, $path = null)
     {
+        $ajax = new AjaxResponse;
         $file = CUploadedFile::getInstanceByName($name);
         if ($file === null) {
-            throw new CException(sprintf('Uploaded file with name "%s" could not be found.', $name));
+            $ajax->error(sprintf('Uploaded file with name "%s" could not be found.', $name));
         }
         $manager = $this->getImageManager();
         $model = $manager->saveModel($file, $saveName, $path);
-        $result = array('imageId' => $model->id);
+        $ajax->add('imageId', $model->id);
         if ($preset !== null) {
             $preset = $manager->loadPreset($preset);
-            $result['imageUrl'] = $manager->createImagePresetUrl($model->id, $preset);
+            $ajax->add('imageUrl', $manager->createImagePresetUrl($model->id, $preset));
         }
-        echo CJSON::encode(array('success' => true, 'result' => $result));
+        $ajax->success();
     }
 
     /**

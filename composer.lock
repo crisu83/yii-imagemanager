@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "c192dc430c7ff24cedca57ef63f1f984",
+    "hash": "e21a60d48ad07e1bc3679340c8f2afb3",
     "packages": [
         {
             "name": "crisu83/yii-ajaxtools",
@@ -66,7 +66,7 @@
         },
         {
             "name": "crisu83/yii-filemanager",
-            "version": "1.6.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Crisu83/yii-filemanager.git",

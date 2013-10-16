@@ -36,7 +36,7 @@ class ImageController extends CController
      */
     public function actionPreset($name, $fileId, $format)
     {
-        $manager = $this->getImageManager();
+        $manager = $this->getManager();
         $image = $manager->loadModelByFileId($fileId);
         $preset = $manager->createPresetImage($name, $image, $format);
         $preset->show($format);
@@ -51,7 +51,7 @@ class ImageController extends CController
      */
     public function actionHolder($name, $preset, $format = Image::FORMAT_PNG)
     {
-        $image = $this->getImageManager()->createPresetHolder($preset, $name, $format);
+        $image = $this->getManager()->createPresetHolder($preset, $name, $format);
         $image->show($format);
         Yii::app()->end();
 
@@ -68,7 +68,7 @@ class ImageController extends CController
         if (!isset($_GET['config'])) {
             throw new CException('You have to provide a "config" parameter.');
         }
-        $model = $this->getImageManager()->loadModel($id);
+        $model = $this->getManager()->loadModel($id);
         $image = $model->openImage();
         $preset = ImagePreset::create(array('filters' => $_GET['config']));
         $image = $preset->applyFilters($image);
@@ -85,12 +85,13 @@ class ImageController extends CController
      */
     public function actionAjaxUpload($name, $preset = null, $saveName = null, $path = null)
     {
+        Yii::import($this->getManager()->dependencies['ajaxtools'] . '.components.*');
         $ajax = new AjaxResponse;
         $file = CUploadedFile::getInstanceByName($name);
         if ($file === null) {
             $ajax->error(sprintf('Uploaded file with name "%s" could not be found.', $name));
         }
-        $manager = $this->getImageManager();
+        $manager = $this->getManager();
         $model = $manager->saveModel($file, $saveName, $path);
         $ajax->add('imageId', $model->id);
         if ($preset !== null) {
@@ -105,14 +106,14 @@ class ImageController extends CController
      * @return ImageManager the component.
      * @throws CException if the component is not found.
      */
-    protected function getImageManager()
+    protected function getManager()
     {
-        if (($imageManager = Yii::app()->getComponent($this->managerID)) == null) {
+        if (($manager = Yii::app()->getComponent($this->managerID)) == null) {
             throw new CException(sprintf(
                 'Failed to get the image manager component. Application component "%" does not exist.',
                 $this->managerID
             ));
         }
-        return $imageManager;
+        return $manager;
     }
 }

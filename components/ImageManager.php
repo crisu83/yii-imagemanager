@@ -136,7 +136,6 @@ class ImageManager extends CApplicationComponent
         $this->registerDependencies($this->dependencies);
         $imaginePath = $this->resolveDependencyPath('imagine');
         Yii::setPathOfAlias('Imagine', $imaginePath . '/lib/Imagine');
-        Yii::import($this->dependencies['ajaxtools'] . '.components.*');
         $this->createPathAlias('imageManager', realpath(__DIR__ . '/..'));
         $this->import('components.*');
         $this->import('filters.*');

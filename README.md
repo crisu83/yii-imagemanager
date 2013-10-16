@@ -147,7 +147,8 @@ Let us assume that you have a model called **Product** for which you want to upl
 /**
  * .....
  * Methods accessible through the 'ImageBehavior' class:
- * @method Image saveImage($file, $name = null, $path = null)
+ * @method CUploadedFile getUploadedImage()
+ * @method Image saveImage($file, $name = null, $path = null, $scenario = 'insert')
  * @method string renderImagePreset($name, $alt = '', $htmlOptions = array(), $holder = null)
  * @method string createImagePresetUrl($name, $holder = null)
  * @method boolean deleteImage()
@@ -157,7 +158,7 @@ class Product extends CActiveRecord
   /**
    * @var CUploadedFile the uploaded file (used when uploading a product image).
    */
-  public $uploadedFile;
+  public $upload;
   
   /**
    * @return array the behavior configurations (behavior name=>behavior config).
@@ -167,6 +168,8 @@ class Product extends CActiveRecord
     return array(
       'image' => array(
         'class' => 'vendor.crisu83.yii-imagemanager.behaviors.ImageBehavior',
+        'name' => $this->name,
+        'path' => 'products',
       ),
     );
   }
@@ -188,7 +191,7 @@ class Product extends CActiveRecord
   {
     return array(
       ......
-      array('uploadedFile', 'file'), // configure the validator if necessary
+      array('upload', 'file'), // configure the validator if necessary
     );
   }
   
@@ -198,7 +201,7 @@ class Product extends CActiveRecord
   public function attributeLabels()
   {
     return array(
-      'uploadedFile' => t('content', 'Image'),
+      'upload' => 'Image',
     );
   }
   
@@ -220,28 +223,14 @@ class ProductController extends Controller
    */
   public function actionUpdate($id)
   {
-    $model = $this->loadModel($id);
+    $model = Product::model()->findByPk($id);
     if (isset($_POST['Product']) {
       $model->attributes = $_POST['Product'];
-      $model->saveImage($model->name, 'products');
-      $this->redirect(array('admin'));
+      if ($model->save()) {
+        $this->redirect(array('admin'));
+      }
     }
     $this->render('update', array('model' => $model);
-  }
-  
-  /**
-   * Loads the product model with the given id.
-   * @param int $id the model id.
-   * @return Product the model.
-   * @throws CHttpException if the model is not found.
-   */
-  public function loadModel($id)
-  {
-    $model = Product::model()->findByPk($id);
-    if ($model === null) {
-      throw new CHttpException(404, 'Page not found');
-    }
-    return $model;
   }
 }
 ```

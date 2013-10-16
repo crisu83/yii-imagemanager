@@ -9,6 +9,7 @@
         }
     ],
     "require": {
+        "crisu83/yii-ajaxtools": "1.1.*",
         "crisu83/yii-extension": "1.1.*",
         "crisu83/yii-filemanager": "1.6.*",
         "imagine/imagine": "0.6.*@dev"

@@ -3,8 +3,39 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "8aa655c9946dc6f569a719ae6e6af5ee",
+    "hash": "c192dc430c7ff24cedca57ef63f1f984",
     "packages": [
+        {
+            "name": "crisu83/yii-ajaxtools",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Crisu83/yii-ajaxtools.git",
+                "reference": "f23fe11f7d22a638abacf72627d478c5d4486995"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Crisu83/yii-ajaxtools/zipball/f23fe11f7d22a638abacf72627d478c5d4486995",
+                "reference": "f23fe11f7d22a638abacf72627d478c5d4486995",
+                "shasum": ""
+            },
+            "require-dev": {
+                "yiisoft/yii": ">=1.1.14"
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Christoffer Niska",
+                    "email": "ChristofferNiska@gmail.com"
+                }
+            ],
+            "description": "AJAX tools for the Yii PHP framework.",
+            "time": "2013-10-16 08:50:50"
+        },
         {
             "name": "crisu83/yii-extension",
             "version": "1.1.1",

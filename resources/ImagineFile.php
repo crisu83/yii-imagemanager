@@ -95,7 +95,7 @@ class ImagineFile extends FileResource
     {
         // as we don't have a physical file we need to perform some magic to get the size.
         ob_start();
-        $this->image->show($this->extension);
+        echo $this->image->get($this->extension);
         $size = ob_get_length();
         ob_end_clean();
         return $size;

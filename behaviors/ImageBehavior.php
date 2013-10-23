@@ -156,7 +156,9 @@ class ImageBehavior extends CActiveRecordBehavior
     public function createImagePresetOptions($name, $holder = null)
     {
         $manager = $this->getManager();
-        $model = $manager->loadModel($this->owner->{$this->idAttribute}, 'file');
+        $model = !empty($this->owner->{$this->idAttribute})
+            ? $manager->loadModel($this->owner->{$this->idAttribute}, 'file')
+            : null;
         return $manager->createPresetOptions($name, $model, $holder);
     }
 

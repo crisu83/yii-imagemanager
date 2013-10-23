@@ -142,6 +142,7 @@ class ImageManager extends CApplicationComponent
         $this->import('components.*');
         $this->import('filters.*');
         $this->import('models.*');
+        $this->import('resources.*');
         if ($this->enableClientHolder) {
             $this->registerAssets();
         }

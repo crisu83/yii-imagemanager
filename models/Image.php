@@ -15,6 +15,9 @@
  * @property integer $fileId
  * @property integer $width
  * @property integer $height
+ *
+ * The followings are the available model relations:
+ * @property File $file
  */
 class Image extends CActiveRecord
 {
@@ -59,6 +62,16 @@ class Image extends CActiveRecord
     }
 
     /**
+     * @return array the model relations.
+     */
+    public function relations()
+    {
+        return array(
+            'file' => array(self::BELONGS_TO, 'File', 'fileId'),
+        );
+    }
+
+    /**
      * @return array customized attribute labels (name=>label)
      */
     public function attributeLabels()
@@ -86,7 +99,7 @@ class Image extends CActiveRecord
      */
     public function resolveFilename()
     {
-        return $this->getFile()->resolveFilename();
+        return $this->file->resolveFilename();
     }
 
     /**
@@ -96,7 +109,17 @@ class Image extends CActiveRecord
      */
     public function resolvePath($absolute = false)
     {
-        return $this->getFile()->resolvePath($absolute);
+        return $this->file->resolvePath($absolute);
+    }
+
+    /**
+     * Returns the url for this image.
+     * @param boolean $absolute whether the url should be absolute (default to false).
+     * @return string the path.
+     */
+    public function resolveUrl($absolute = false)
+    {
+        return $this->file->resolveUrl($absolute);
     }
 
     /**
@@ -106,15 +129,6 @@ class Image extends CActiveRecord
     public function resolveNormalizedPath()
     {
         return $this->getManager()->normalizePath($this->resolvePath());
-    }
-
-    /**
-     * Returns the associated file model.
-     * @return File the model.
-     */
-    public function getFile()
-    {
-        return $this->getManager()->getFileManager()->loadModel($this->fileId);
     }
 
     /**

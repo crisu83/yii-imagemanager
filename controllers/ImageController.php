@@ -51,7 +51,7 @@ class ImageController extends CController
      */
     public function actionHolder($name, $preset, $format = Image::FORMAT_PNG)
     {
-        $image = $this->getManager()->createPresetHolder($preset, $name, $format);
+        $image = $this->getManager()->createPresetHolder($preset, $name);
         $image->show($format);
         Yii::app()->end();
 
@@ -68,7 +68,9 @@ class ImageController extends CController
         if (!isset($_GET['config'])) {
             throw new CException('You have to provide a "config" parameter.');
         }
-        $model = $this->getManager()->loadModel($id);
+        if (($model = $this->getManager()->loadModel($id, 'file')) === null) {
+            throw new CException(sprintf('Failed to locate image model with id "%d".', $id));
+        }
         $image = $model->openImage();
         $preset = ImagePreset::create(array('filters' => $_GET['config']));
         $image = $preset->applyFilters($image);
@@ -92,11 +94,11 @@ class ImageController extends CController
             $ajax->error(sprintf('Uploaded file with name "%s" could not be found.', $name));
         }
         $manager = $this->getManager();
-        $model = $manager->saveModel($file, $saveName, $path);
+        $model = $manager->saveModel(new UploadedFile($file), $saveName, $path);
         $ajax->add('imageId', $model->id);
         if ($preset !== null) {
             $preset = $manager->loadPreset($preset);
-            $ajax->add('imageUrl', $manager->createImagePresetUrl($model->id, $preset));
+            $ajax->add('imageUrl', $manager->createImagePresetUrl($model, $preset));
         }
         $ajax->success();
     }

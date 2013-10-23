@@ -131,6 +131,8 @@ class ImageManager extends CApplicationComponent
     public function init()
     {
         parent::init();
+        // Load the file manager because we need to register some of its classes
+        $this->getFileManager();
         Yii::import($this->yiiExtensionAlias . '.behaviors.*');
         $this->attachBehavior('ext', new ComponentBehavior);
         $this->registerDependencies($this->dependencies);
@@ -140,6 +142,7 @@ class ImageManager extends CApplicationComponent
         $this->import('components.*');
         $this->import('filters.*');
         $this->import('models.*');
+        $this->import('resources.*');
         if ($this->enableClientHolder) {
             $this->registerAssets();
         }
@@ -185,29 +188,28 @@ class ImageManager extends CApplicationComponent
 
     /**
      * Returns the url to a image preset.
-     * @param integer $id the model id.
+     * @param Image $model the model instance.
      * @param ImagePreset $preset
      * @return string the url.
      */
-    public function createImagePresetUrl($id, $preset)
+    public function createImagePresetUrl($model, $preset)
     {
-        $model = $this->loadModel($id);
         return $preset->resolveCacheUrl() . $model->resolveNormalizedPath();
     }
 
     /**
      * Creates the HTML attributes for rendering a specific image preset.
      * @param string $name the preset name.
-     * @param integer $id the model id.
+     * @param Image $model the model instance.
      * @param string $holder the placeholder name.
      * @return string the url.
      */
-    public function createPresetOptions($name, $id = null, $holder = null)
+    public function createPresetOptions($name, $model = null, $holder = null)
     {
         $options = array();
         $preset = $this->loadPreset($name);
-        if ($id !== null) {
-            $options['src'] = $this->createImagePresetUrl($id, $preset);
+        if ($model !== null) {
+            $options['src'] = $this->createImagePresetUrl($model, $preset);
         } else {
             if ($holder === null && $this->enableClientHolder) {
                 $options['data-src'] = $this->createClientHolderUrl($preset->getWidth(), $preset->getHeight());
@@ -236,7 +238,7 @@ class ImageManager extends CApplicationComponent
      * @param integer $height the image height.
      * @return string the url.
      */
-    protected function createClientHolderUrl($width, $height)
+    public function createClientHolderUrl($width, $height)
     {
         return 'holder.js/' . $width . 'x' . $height . '/text:' . $this->clientHolderText;
     }
@@ -251,12 +253,11 @@ class ImageManager extends CApplicationComponent
     public function createPresetImage($name, $model, $format)
     {
         $preset    = $this->loadPreset($name);
-        $file      = $model->getFile();
-        $rawPath   = $file->resolvePath();
+        $rawPath   = $model->file->resolvePath();
         $image     = $this->openImageWithPreset($rawPath, $preset);
         $filePath  = $model->resolveNormalizedPath();
         $filePath  = substr($filePath, 0, strrpos($filePath, '/'));
-        $filename  = $file->resolveFilename($format);
+        $filename  = $model->file->resolveFilename($format);
         return $preset->saveCachedImage($image, $filePath, $filename, array('format' => $format));
     }
 
@@ -296,7 +297,7 @@ class ImageManager extends CApplicationComponent
      */
     protected function resolveHolderFilename($name)
     {
-        return $name . '.png';
+        return $name . '.' . Image::FORMAT_PNG;
     }
 
     /**
@@ -341,22 +342,22 @@ class ImageManager extends CApplicationComponent
 
     /**
      * Saves an image file on the hard drive and in the database.
-     * @param CUploadedFile $file the uploaded file instance.
+     * @param FileResource $resource the file resource.
      * @param string $name the file name.
      * @param string $path the file path.
      * @param string $scenario the scenario name.
      * @return Image the image model.
      * @throws CException if saving the image model is not successful.
      */
-    public function saveModel($file, $name = null, $path = null, $scenario = 'insert')
+    public function saveModel(FileResource $resource, $name = null, $path = null, $scenario = 'insert')
     {
         $model         = $this->createModel($scenario);
         $fileManager   = $this->getFileManager();
         $path          = $this->imageDir . '/' . $this->rawDir . '/' . $path;
-        $file          = $fileManager->saveModel($file, $name, $path);
-        $savePath      = $file->resolvePath();
+        $resource      = $fileManager->saveModel($resource, $name, $path);
+        $savePath      = $resource->resolvePath();
         $image         = $this->openImage($savePath);
-        $model->fileId = $file->id;
+        $model->fileId = $resource->id;
         $size          = $image->getSize();
         $model->width  = $size->getWidth();
         $model->height = $size->getHeight();
@@ -369,31 +370,23 @@ class ImageManager extends CApplicationComponent
     /**
      * Loads an image model.
      * @param integer $id the model id.
+     * @param mixed $with related models that should be eager-loaded.
      * @return Image the model.
      */
-    public function loadModel($id)
+    public function loadModel($id, $with = array())
     {
-        /* @var Image $model */
-        $model = CActiveRecord::model($this->modelClass)->findByPk($id);
-        if ($model === null) {
-            throw new CException(sprintf('Failed to locale image model with id "%d".', $id));
-        }
-        return $model;
+        return CActiveRecord::model($this->modelClass)->with($with)->findByPk($id);
     }
 
     /**
      * Loads an image model by its file id.
      * @param integer $fileId the file id.
+     * @param mixed $with related models that should be eager-loaded.
      * @return Image the model.
      */
-    public function loadModelByFileId($fileId)
+    public function loadModelByFileId($fileId, $with = array())
     {
-        /* @var Image $model */
-        $model = CActiveRecord::model($this->modelClass)->findByAttributes(array('fileId' => $fileId));
-        if ($model === null) {
-            throw new CException(sprintf('Failed to locale image model with file id "%d".', $fileId));
-        }
-        return $model;
+        return CActiveRecord::model($this->modelClass)->with($with)->findByAttributes(array('fileId' => $fileId));
     }
 
     /**
@@ -403,7 +396,10 @@ class ImageManager extends CApplicationComponent
      */
     public function deleteModel($id)
     {
-        return $this->loadModel($id)->delete();
+        if (($model = $this->loadModel($id)) === null) {
+            throw new CException(sprintf('Failed to locate image model with id "%d".'), $id);
+        }
+        return $model->delete();
     }
 
     /**

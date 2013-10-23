@@ -101,18 +101,19 @@ class ImageBehavior extends CActiveRecordBehavior
      */
     public function saveImage($file, $name = null, $path = null, $scenario = 'insert')
     {
-        $model = $this->getManager()->saveModel($file, $name, $path, $scenario);
+        $model = $this->getManager()->saveModel(new UploadedFile($file), $name, $path, $scenario);
         $this->owner->{$this->idAttribute} = $model->id;
         return $model;
     }
 
     /**
      * Loads the image associated with the owner of this behavior.
+     * @param mixed $with related models that should be eager-loaded.
      * @return Image the model.
      */
-    public function loadImage()
+    public function loadImage($with = 'file')
     {
-        return $this->getManager()->loadModel($this->owner->{$this->idAttribute});
+        return $this->getManager()->loadModel($this->owner->{$this->idAttribute}, $with);
     }
 
     /**
@@ -138,7 +139,12 @@ class ImageBehavior extends CActiveRecordBehavior
     public function createImagePresetUrl($name)
     {
         $manager = $this->getManager();
-        return $manager->createImagePresetUrl($this->owner->{$this->idAttribute}, $manager->loadPreset($name));
+        if (($model = $manager->loadModel($this->owner->{$this->idAttribute}, 'file')) === null) {
+            throw new CException(sprintf(
+                'Failed to locate image model with id "%d".'
+            ), $this->owner->{$this->idAttribute});
+        }
+        return $manager->createImagePresetUrl($model, $manager->loadPreset($name));
     }
 
     /**
@@ -149,7 +155,9 @@ class ImageBehavior extends CActiveRecordBehavior
      */
     public function createImagePresetOptions($name, $holder = null)
     {
-        return $this->getManager()->createPresetOptions($name, $this->owner->{$this->idAttribute}, $holder);
+        $manager = $this->getManager();
+        $model = $manager->loadModel($this->owner->{$this->idAttribute}, 'file');
+        return $manager->createPresetOptions($name, $model, $holder);
     }
 
     /**

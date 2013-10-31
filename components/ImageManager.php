@@ -57,6 +57,11 @@ class ImageManager extends CApplicationComponent
     public $holders = array();
 
     /**
+     * @var string the name of the default placeholder.
+     */
+    public $defaultHolder;
+
+    /**
      * @var string the name of the images directory.
      */
     public $imageDir = 'images';
@@ -207,6 +212,9 @@ class ImageManager extends CApplicationComponent
     public function createPresetOptions($name, $model = null, $holder = null)
     {
         $options = array();
+        if ($holder === null && isset($this->defaultHolder)) {
+            $holder = $this->defaultHolder;
+        }
         $preset = $this->loadPreset($name);
         if ($model !== null) {
             $options['src'] = $this->createImagePresetUrl($model, $preset);

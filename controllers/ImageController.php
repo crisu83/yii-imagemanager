@@ -37,9 +37,10 @@ class ImageController extends CController
     public function actionPreset($name, $fileId, $format)
     {
         $manager = $this->getManager();
-        $image = $manager->loadModelByFileId($fileId);
-        $preset = $manager->createPresetImage($name, $image, $format);
-        $preset->show($format);
+        $model = $manager->loadModelByFileId($fileId);
+        $preset = $manager->loadPreset($name);
+        $image = $manager->createPresetImage($preset, $model, $format);
+        $image->show($format);
         Yii::app()->end();
     }
 

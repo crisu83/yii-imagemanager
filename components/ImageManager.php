@@ -216,6 +216,8 @@ class ImageManager extends CApplicationComponent
             $holder = $this->defaultHolder;
         }
         $preset = $this->loadPreset($name);
+        $options['width'] = $preset->getWidth();
+        $options['height'] = $preset->getHeight();
         if ($model !== null) {
             $options['src'] = $this->createImagePresetUrl($model, $preset);
         } else {
@@ -253,14 +255,13 @@ class ImageManager extends CApplicationComponent
 
     /**
      * Creates a preset image for the image model with the given id.
-     * @param string $name the preset name.
+     * @param ImagePreset $preset the image preset instance.
      * @param Image $model the model.
      * @param string $format the image file format.
      * @return ImageInterface the image.
      */
-    public function createPresetImage($name, $model, $format)
+    public function createPresetImage($preset, $model, $format)
     {
-        $preset    = $this->loadPreset($name);
         $rawPath   = $model->file->resolvePath();
         $image     = $this->openImageWithPreset($rawPath, $preset);
         $filePath  = $model->resolveNormalizedPath();

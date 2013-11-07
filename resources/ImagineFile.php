@@ -35,6 +35,11 @@ class ImagineFile extends FileResource
     protected $saveOptions = array();
 
     /**
+     * @var bool whether to determine the physical size of this file (might be slow for large images).
+     */
+    protected $determineSize = true;
+
+    /**
      * Creates a new file resource.
      * @param string $name the desired file name.
      * @param string $extension the file extension.
@@ -54,6 +59,17 @@ class ImagineFile extends FileResource
     public function resolveFilename()
     {
         return $this->name . '.' . $this->extension;
+    }
+
+    /**
+     * Saves the file to the specified path.
+     * @param string $path the path where to save the file.
+     * @return bool if the file was successfully saved.
+     */
+    public function saveAs($path)
+    {
+        $this->image->save($path, $this->saveOptions);
+        return true;
     }
 
     /**
@@ -93,6 +109,9 @@ class ImagineFile extends FileResource
      */
     public function getSize()
     {
+        if (!$this->determineSize) {
+            return 0;
+        }
         // as we don't have a physical file we need to perform some magic to get the size.
         ob_start();
         echo $this->image->get($this->extension);
@@ -111,13 +130,10 @@ class ImagineFile extends FileResource
     }
 
     /**
-     * Saves the file to the specified path.
-     * @param string $path the path where to save the file.
-     * @return bool if the file was successfully saved.
+     * @param boolean $determineSize
      */
-    public function saveAs($path)
+    public function setDetermineSize($determineSize)
     {
-        $this->image->save($path, $this->saveOptions);
-        return true;
+        $this->determineSize = $determineSize;
     }
 }

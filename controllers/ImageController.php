@@ -95,13 +95,22 @@ class ImageController extends CController
             $ajax->error(sprintf('Uploaded file with name "%s" could not be found.', $name));
         }
         $manager = $this->getManager();
-        $model = $manager->saveModel(new UploadedFile($file), $saveName, $path);
-        $ajax->add('imageId', $model->id);
-        if ($preset !== null) {
-            $preset = $manager->loadPreset($preset);
-            $ajax->add('imageUrl', $manager->createImagePresetUrl($model, $preset));
+        try {
+            $model = $manager->saveModel(new UploadedFile($file), $saveName, $path);
+            $ajax->add('imageId', $model->id);
+            if ($preset !== null) {
+                $preset = $manager->loadPreset($preset);
+                $ajax->add('imageUrl', $manager->createImagePresetUrl($model, $preset));
+            }
+            $ajax->success();
+        } catch (CException $e) {
+            Yii::log(
+                sprintf('Image upload failed with error: %s', $e->getMessage()),
+                CLogger::LEVEL_ERROR,
+                'ImageManager'
+            );
+            $ajax->error($e->getMessage());
         }
-        $ajax->success();
     }
 
     /**

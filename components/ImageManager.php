@@ -408,6 +408,7 @@ class ImageManager extends CApplicationComponent
         if (($model = $this->loadModel($id)) === null) {
             throw new CException(sprintf('Failed to locate image model with id "%d".'), $id);
         }
+        $this->getFileManager()->deleteModel($model->fileId);
         return $model->delete();
     }
 

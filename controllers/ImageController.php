@@ -109,7 +109,7 @@ class ImageController extends CController
                 CLogger::LEVEL_ERROR,
                 'ImageManager'
             );
-            $ajax->error($e->getMessage());
+            $ajax->error(t('imageManager', 'Something went wrong when uploading the image, please try again.'));
         }
     }
 

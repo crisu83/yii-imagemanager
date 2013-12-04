@@ -55,7 +55,6 @@ class ImageController extends CController
         $image = $this->getManager()->createPresetHolder($preset, $name);
         $image->show($format);
         Yii::app()->end();
-
     }
 
     /**
@@ -88,8 +87,7 @@ class ImageController extends CController
      */
     public function actionAjaxUpload($name, $preset = null, $saveName = null, $path = null)
     {
-        Yii::import($this->getManager()->dependencies['ajaxtools'] . '.components.*');
-        $ajax = new AjaxResponse;
+        $ajax = $this->createAjaxResponse();
         $file = CUploadedFile::getInstanceByName($name);
         if ($file === null) {
             $ajax->error(sprintf('Uploaded file with name "%s" could not be found.', $name));
@@ -100,10 +98,14 @@ class ImageController extends CController
             $ajax->add('imageId', $model->id);
             if ($preset !== null) {
                 $preset = $manager->loadPreset($preset);
+                $ajax->add(
+                    'imageTooSmall',
+                    $preset->getWidth() > $model->width || $preset->getHeight() > $model->height
+                );
                 $ajax->add('imageUrl', $manager->createImagePresetUrl($model, $preset));
             }
             $ajax->success();
-        } catch (CException $e) {
+        } catch (Exception $e) {
             Yii::log(
                 sprintf('Image upload failed with error: %s', $e->getMessage()),
                 CLogger::LEVEL_ERROR,
@@ -111,6 +113,16 @@ class ImageController extends CController
             );
             $ajax->error(t('imageManager', 'Something went wrong when uploading the image, please try again.'));
         }
+    }
+
+    /**
+     * Returns a new AJAX response.
+     * @return AjaxResponse the response.
+     */
+    protected function createAjaxResponse()
+    {
+        Yii::import($this->getManager()->dependencies['ajaxtools'] . '.components.*');
+        return new AjaxResponse;
     }
 
     /**

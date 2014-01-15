@@ -366,6 +366,7 @@ class ImageManager extends CApplicationComponent
         $resource      = $fileManager->saveModel($resource, $name, $path);
         $savePath      = $resource->resolvePath();
         $image         = $this->openImage($savePath);
+        $image         = $this->fixOrientation($image, $path);
         $model->fileId = $resource->id;
         $size          = $image->getSize();
         $model->width  = $size->getWidth();
@@ -574,5 +575,58 @@ class ImageManager extends CApplicationComponent
             ));
         }
         return Yii::app()->getComponent($this->fileManagerID);
+    }
+
+    /**
+     * Fix image orientation (changes when images are taken with mobile devices).
+     * @param \Imagine\Image\ImageInterface $image image resource.
+     * @param string $path path to image file.
+     * @return \Imagine\Image\ImageInterface image resource.
+     */
+    public function fixOrientation($image, $path)
+    {
+        // Read all tagged data of IFD0. In normal image files this contains image size etc.
+        $exif = exif_read_data($path, 'IFD0');
+        if (is_array($exif) && isset($exif['Orientation'])) {
+            switch ($exif['Orientation']) {
+                // Standard/Normal Orientation (no need to do anything)
+                case 1:
+                    return $image;
+                    break;
+                // Correct orientation, but flipped on the horizontal axis
+                case 2:
+                    $image->flipHorizontally();
+                    break;
+                // Upside-down
+                case 3:
+                    $image->flipVertically();
+                    break;
+                // Upside-down & flipped along horizontal axis
+                case 4:
+                    $image->flipHorizontally();
+                    $image->flipVertically();
+                    break;
+                // Turned 90 deg to the left and flipped
+                case 5:
+                    $image->rotate(90);
+                    $image->flipHorizontally();
+                    break;
+                // Turned 90 deg to the left
+                case 6:
+                    $image->rotate(90);
+                    break;
+                // Turned 90 deg to the right and flipped
+                case 7:
+                    $image->rotate(-90);
+                    $image->flipHorizontally();
+                    break;
+                // Turned 90 deg to the right
+                case 8:
+                    $image->rotate(-90);
+                    break;
+            }
+            $image->save($path);
+        }
+        return $image;
     }
 }

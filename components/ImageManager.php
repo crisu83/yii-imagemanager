@@ -366,7 +366,9 @@ class ImageManager extends CApplicationComponent
         $resource      = $fileManager->saveModel($resource, $name, $path);
         $savePath      = $resource->resolvePath();
         $image         = $this->openImage($savePath);
-        $image         = $this->fixOrientation($image, $path);
+        if (in_array($model->file->extension, array('jpg', 'jpeg', 'tiff'))) {
+            $image = $this->fixOrientation($image, $savePath);
+        }
         $model->fileId = $resource->id;
         $size          = $image->getSize();
         $model->width  = $size->getWidth();
@@ -586,9 +588,9 @@ class ImageManager extends CApplicationComponent
     public function fixOrientation($image, $path)
     {
         // Read all tagged data of IFD0. In normal image files this contains image size etc.
-        $exif = exif_read_data($path, 'IFD0');
-        if (is_array($exif) && isset($exif['Orientation'])) {
-            switch ($exif['Orientation']) {
+        $data = exif_read_data($path, 'IFD0');
+        if (is_array($data) && isset($data['Orientation'])) {
+            switch ($data['Orientation']) {
                 // Standard/Normal Orientation (no need to do anything)
                 case 1:
                     return $image;

@@ -407,7 +407,7 @@ class ImageManager extends CApplicationComponent
     public function deleteModel($id)
     {
         if (($model = $this->loadModel($id)) === null) {
-            throw new CException(sprintf('Failed to locate image model with id "%d".'), $id);
+            throw new CException(sprintf('Failed to locate image model with id "%d".', $id));
         }
         $fileId = $model->fileId;
         $result = $model->delete();

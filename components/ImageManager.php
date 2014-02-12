@@ -21,8 +21,6 @@ use Imagine\Image\ImagineInterface;
  * @method void registerScriptFile($url, $position = null)
  * @method string resolveScriptVersion($filename, $minified = false)
  * @method CClientScript getClientScript()
- * @method void registerDependencies($dependencies)
- * @method string resolveDependencyPath($name)
  */
 class ImageManager extends CApplicationComponent
 {
@@ -111,22 +109,9 @@ class ImageManager extends CApplicationComponent
      */
     public $fileManagerID = 'fileManager';
 
-    /**
-     * @var string path to the yii-extension library.
-     */
-    public $yiiExtensionAlias = 'vendor.crisu83.yii-extension';
-
-    /**
-     * @var array the dependencies (name => path).
-     * Change these to the correct ones if you are not using Composer.
-     */
-    public $dependencies = array(
-        'ajaxtools' => 'vendor.crisu83.yii-ajaxtools',
-        'imagine' => 'vendor.imagine.imagine',
-    );
-
     /** @var ImagePreset[] */
     private $_presets;
+
     /** @var ImagineInterface */
     private $_factory;
 
@@ -136,18 +121,8 @@ class ImageManager extends CApplicationComponent
     public function init()
     {
         parent::init();
-        // Load the file manager because we need to register some of its classes
-        $this->getFileManager();
-        Yii::import($this->yiiExtensionAlias . '.behaviors.*');
         $this->attachBehavior('ext', new ComponentBehavior);
-        $this->registerDependencies($this->dependencies);
-        $imaginePath = $this->resolveDependencyPath('imagine');
-        Yii::setPathOfAlias('Imagine', $imaginePath . '/lib/Imagine');
-        $this->createPathAlias('imageManager', realpath(__DIR__ . '/..'));
-        $this->import('components.*');
-        $this->import('filters.*');
-        $this->import('models.*');
-        $this->import('resources.*');
+        $this->createPathAlias('imageManager', dirname(__DIR__));
         if ($this->enableClientHolder) {
             $this->registerAssets();
         }

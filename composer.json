@@ -10,14 +10,25 @@
     ],
     "require": {
         "crisu83/yii-ajaxtools": ">=1.0.0",
-        "crisu83/yii-extension": ">=1.1.0",
-        "crisu83/yii-filemanager": ">=1.8.0",
+        "crisu83/yii-extension": ">=1.2.0",
+        "crisu83/yii-filemanager": ">=1.9.1",
         "imagine/imagine": "0.6.*@dev"
     },
     "require-dev": {
         "codeception/codeception": "@stable",
         "crisu83/yii-testingtools": "dev-master",
-        "yiisoft/yii": ">=1.1.14"
+        "yiisoft/yii": "1.1.*"
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "autoload": {
+        "classmap": [
+            "behaviors/",
+            "commands/",
+            "components/",
+            "controllers/",
+            "filters/",
+            "models/",
+            "resources/"
+        ]
+    }
 }

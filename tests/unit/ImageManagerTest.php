@@ -18,7 +18,7 @@ class ImageManagerTest extends \YiiTest
                 'components' => array(
                     'fileManager' => array(
                         'class' => 'vendor.crisu83.yii-filemanager.components.FileManager',
-                        'baseUrl' => '/test',
+                        'baseUrl' => '//test',
                     ),
                     'imageManager' => array(
                         'class' => 'project.components.ImageManager',
@@ -128,7 +128,7 @@ class ImageManagerTest extends \YiiTest
     {
         $manager = $this->getManager();
         $this->assertEquals('files/images/cache', $manager->resolveCacheUrl());
-        $this->assertEquals('test/files/images/cache', $manager->resolveCacheUrl(true));
+        $this->assertEquals('//test/files/images/cache', $manager->resolveCacheUrl(true));
     }
 
     public function testResolveHolderPath()
@@ -142,7 +142,7 @@ class ImageManagerTest extends \YiiTest
     {
         $manager = $this->getManager();
         $this->assertEquals('files/images/holder', $manager->resolveHolderUrl());
-        $this->assertEquals('test/files/images/holder', $manager->resolveHolderUrl(true));
+        $this->assertEquals('//test/files/images/holder', $manager->resolveHolderUrl(true));
     }
 
     public function testGetBasePath()
@@ -156,7 +156,7 @@ class ImageManagerTest extends \YiiTest
     {
         $manager = $this->getManager();
         $this->assertEquals('files/images', $manager->getBaseUrl());
-        $this->assertEquals('test/files/images', $manager->getBaseUrl(true));
+        $this->assertEquals('//test/files/images', $manager->getBaseUrl(true));
     }
 
     public function testGetFactory()

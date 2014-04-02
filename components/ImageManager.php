@@ -167,6 +167,17 @@ class ImageManager extends CApplicationComponent
     }
 
     /**
+     * Returns the path to an image preset.
+     * @param Image $model the model instance.
+     * @param ImagePreset $preset the image preset.
+     * @return string the path.
+     */
+    public function createImagePresetPath($model, $preset)
+    {
+        return $preset->resolveCachePath() . $model->resolveNormalizedPath();
+    }
+
+    /**
      * Returns the url to a image preset.
      * @param Image $model the model instance.
      * @param ImagePreset $preset

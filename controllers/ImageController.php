@@ -87,7 +87,7 @@ class ImageController extends CController
      */
     public function actionAjaxUpload($name, $preset = null, $saveName = null, $path = null)
     {
-        $ajax = $this->createAjaxResponse();
+        $ajax = new AjaxResponse;
         $file = CUploadedFile::getInstanceByName($name);
         if ($file === null) {
             $ajax->error(sprintf('Uploaded file with name "%s" could not be found.', $name));
@@ -113,16 +113,6 @@ class ImageController extends CController
             );
             $ajax->error(t('imageManager', 'Something went wrong when uploading the image, please try again.'));
         }
-    }
-
-    /**
-     * Returns a new AJAX response.
-     * @return AjaxResponse the response.
-     */
-    protected function createAjaxResponse()
-    {
-        Yii::import($this->getManager()->dependencies['ajaxtools'] . '.components.*');
-        return new AjaxResponse;
     }
 
     /**

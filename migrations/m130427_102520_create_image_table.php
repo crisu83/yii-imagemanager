@@ -7,7 +7,7 @@ class m130427_102520_create_image_table extends CDbMigration
         $this->execute(
             "CREATE TABLE `image` (
                 `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                `fileId` INT NOT NULL,
+                `fileId` INT UNSIGNED NOT NULL,
                 `width` INT NOT NULL,
                 `height` INT NOT NULL,
                 PRIMARY KEY (`id`)

@@ -198,22 +198,33 @@ class ImageManager extends CApplicationComponent
     public function createPresetOptions($name, $model = null, $holder = null)
     {
         $options = array();
-        if ($holder === null && isset($this->defaultHolder)) {
-            $holder = $this->defaultHolder;
-        }
         $preset = $this->loadPreset($name);
         $options['width'] = $preset->getWidth();
         $options['height'] = $preset->getHeight();
-        if ($model !== null) {
-            $options['src'] = $this->createImagePresetUrl($model, $preset);
-        } else {
-            if ($holder === null && $this->enableClientHolder) {
-                $options['data-src'] = $this->createClientHolderUrl($preset->getWidth(), $preset->getHeight());
-            } else {
-                $options['src'] = $this->createHolderUrl($holder, $preset);
-            }
+        list($imageUrl, $holderUrl) = $this->resolveImagePresetUrls($model, $preset, $holder);
+        $options['src'] = $imageUrl !== null ? $imageUrl : $holderUrl;
+        if ($holderUrl === null && $this->enableClientHolder) {
+            $options['data-src'] = $this->createClientHolderUrl($preset->getWidth(), $preset->getHeight());
         }
         return $options;
+    }
+
+    /**
+     * Returns the image or holder url.
+     * @param Image $model the model instance.
+     * @param ImagePreset $preset the image preset.
+     * @param string $holder the placeholder name.
+     * @return array an array with the image (index 0) and holder (index 1) urls.
+     */
+    public function resolveImagePresetUrls($model, $preset, $holder = null)
+    {
+        if ($holder === null && isset($this->defaultHolder)) {
+            $holder = $this->defaultHolder;
+        }
+        return array(
+            $model !== null ? $this->createImagePresetUrl($model, $preset) : null,
+            $holder !== null ? $this->createHolderUrl($holder, $preset) : null
+        );
     }
 
     /**
@@ -387,6 +398,7 @@ class ImageManager extends CApplicationComponent
     /**
      * Deletes an image model.
      * @param integer $id the model id.
+     * @throws CException
      * @return boolean the result.
      */
     public function deleteModel($id)

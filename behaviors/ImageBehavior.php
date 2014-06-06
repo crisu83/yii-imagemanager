@@ -53,7 +53,7 @@ class ImageBehavior extends CActiveRecordBehavior
      * Actions to take before validating the owner of this behavior.
      * @param CModelEvent $event event parameter.
      */
-    protected function beforeValidate($event)
+    public function beforeValidate($event)
     {
         if ($this->autoSave) {
             $this->owner->{$this->uploadAttribute} = $this->getUploadedImage();
@@ -64,7 +64,7 @@ class ImageBehavior extends CActiveRecordBehavior
      * Actions to take before saving the owner of this behavior.
      * @param CModelEvent $event event parameter.
      */
-    protected function beforeSave($event)
+    public function beforeSave($event)
     {
         if ($this->autoSave) {
             $this->saveImage($this->owner->{$this->uploadAttribute}, $this->name, $this->path);
@@ -75,7 +75,7 @@ class ImageBehavior extends CActiveRecordBehavior
      * Actions to take before deleting the owner of this behavior.
      * @param CModelEvent $event event parameter.
      */
-    protected function beforeDelete($event)
+    public function beforeDelete($event)
     {
         if ($this->autoDelete) {
             $this->deleteImage();

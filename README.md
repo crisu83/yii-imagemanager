@@ -2,7 +2,7 @@ yii-imagemanager
 ================
 
 [![Latest Stable Version](https://poser.pugx.org/crisu83/yii-imagemanager/v/stable.png)](https://packagist.org/packages/crisu83/yii-imagemanager)
-[![Build Status](https://travis-ci.org/Crisu83/yii-imagemanager.png)](https://travis-ci.org/Crisu83/yii-imagemanager)
+[![Build Status](https://travis-ci.org/crisu83/yii-imagemanager.png)](https://travis-ci.org/crisu83/yii-imagemanager)
 
 Image manager extension for the Yii PHP framework.
 

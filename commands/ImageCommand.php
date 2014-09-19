@@ -70,7 +70,7 @@ EOD;
     RewriteRule {$cacheDir}/([^/]+)/.*/{$holderDir}/(.*)\.(gif|jpg|jpeg|png)$ {$holderRoute}?name=$2&preset=$1&format=$3 [L,R=302,QSA]
 
     # Rewrite rule for missing images.
-    RewriteRule {$cacheDir}/([^/]+)/.*[^\d](\d+)\.(gif|jpg|jpeg|png)$ {$presetRoute}?name=$1&id=$2&format=$3 [L,R=302,QSA]
+    RewriteRule {$cacheDir}/([^/]+)/.*[^\d](\d+)\.(gif|jpg|jpeg|png)$ {$presetRoute}?name=$1&fileId=$2&format=$3 [L,R=302,QSA]
 
 </IfModule>
 EOD;

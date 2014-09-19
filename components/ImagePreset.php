@@ -29,7 +29,19 @@ class ImagePreset extends CComponent
      */
     public $managerID = 'imageManager';
 
-    /** @var ImagineFilter[] */
+    /**
+     * @var array filter configuration.
+     */
+    public $filters = array();
+
+    /**
+     * @var array preset options.
+     */
+    public $options = array();
+
+    /**
+     * @var ImagineFilter[]
+     */
     protected $_filters;
 
     /**
@@ -174,7 +186,6 @@ class ImagePreset extends CComponent
                     $filters[] = $filter;
                 }
             }
-            unset($config['filters']);
         }
         /** @var ImagePreset $preset */
         $preset = Yii::createComponent($config);

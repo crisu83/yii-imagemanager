@@ -35,6 +35,11 @@ class ImagePreset extends CComponent
     public $filters = array();
 
     /**
+     * @var array preset options.
+     */
+    public $options = array();
+
+    /**
      * @var ImagineFilter[]
      */
     protected $_filters;

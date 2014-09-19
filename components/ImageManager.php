@@ -264,7 +264,8 @@ class ImageManager extends CApplicationComponent
         $filePath  = $model->resolveNormalizedPath();
         $filePath  = substr($filePath, 0, strrpos($filePath, '/'));
         $filename  = $model->file->resolveFilename($format);
-        return $preset->saveCachedImage($image, $filePath, $filename, array('format' => $format));
+        $options   = array_merge(array('format' => $format), $preset->options);
+        return $preset->saveCachedImage($image, $filePath, $filename, $options);
     }
 
     /**

@@ -135,14 +135,16 @@ class ImageBehavior extends CActiveRecordBehavior
      * Returns the url to the image for the owner of this behavior.
      * @param string $name the preset name.
      * @return string the url.
+     * @throws CException if model loading fails.
      */
     public function createImagePresetUrl($name)
     {
         $manager = $this->getManager();
         if (($model = $manager->loadModel($this->owner->{$this->idAttribute}, 'file')) === null) {
             throw new CException(sprintf(
-                'Failed to locate image model with id "%d".'
-            ), $this->owner->{$this->idAttribute});
+                'Failed to locate image model with id "%d".',
+                $this->owner->{$this->idAttribute})
+            );
         }
         return $manager->createImagePresetUrl($model, $manager->loadPreset($name));
     }
